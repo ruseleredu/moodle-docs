@@ -91,6 +91,7 @@ const config: Config = {
         sidebarPath: require.resolve("./sidebarsAdm.js"), // Separate sidebar for ADM docs
         // 👇 Add this line for the last update time
         showLastUpdateTime: true,
+        showLastUpdateAuthor: true,
         // ... other options specific to your ADM docs
       },
     ],
@@ -104,6 +105,7 @@ const config: Config = {
         sidebarPath: require.resolve("./sidebarsDev.js"), // Separate sidebar for Developer docs
         // 👇 Add this line for the last update time
         showLastUpdateTime: true,
+        showLastUpdateAuthor: true,
         // ... other options specific to your Dev docs
       },
     ],
@@ -117,6 +119,7 @@ const config: Config = {
         sidebarPath: require.resolve("./sidebarsEdu.js"), // Separate sidebar for Edu docs
         // 👇 Add this line for the last update time
         showLastUpdateTime: true,
+        showLastUpdateAuthor: true,
         // ... other options specific to your Edu docs
       },
     ],
@@ -130,6 +133,7 @@ const config: Config = {
         sidebarPath: require.resolve("./sidebarsQA.js"), // Separate sidebar for QA docs
         // 👇 Add this line for the last update time
         showLastUpdateTime: true,
+        showLastUpdateAuthor: true,
         // ... other options specific to your QA docs
       },
     ],
