@@ -53,6 +53,8 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           // Please change this to your repo.
+          showLastUpdateTime: true,
+          showLastUpdateAuthor: true,
           // Remove this to remove the "edit this page" links.
           editUrl:
             'https://ruseleredu.github.io/moodle-docs/edit/main/',
