@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmoodle_docs=self.webpackChunkmoodle_docs||[]).push([["3415"],{2734(o){o.exports=JSON.parse('{"metadata":{"permalink":"/moodle-docs/blog","page":1,"postsPerPage":10,"totalPages":1,"totalCount":4,"blogDescription":"Blog","blogTitle":"Blog"}}')}}]);

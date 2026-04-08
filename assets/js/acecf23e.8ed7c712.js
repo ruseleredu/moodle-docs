@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmoodle_docs=self.webpackChunkmoodle_docs||[]).push([["3220"],{1912(o){o.exports=JSON.parse('{"blogBasePath":"/moodle-docs/blog","blogTitle":"Blog","authorsListPath":"/moodle-docs/blog/authors"}')}}]);
