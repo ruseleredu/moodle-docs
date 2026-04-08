@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmoodle_docs=self.webpackChunkmoodle_docs||[]).push([["8739"],{3376(s){s.exports=JSON.parse('{"name":"docusaurus-plugin-content-docs","id":"qa"}')}}]);
