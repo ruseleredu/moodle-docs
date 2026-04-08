@@ -2,6 +2,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import footer from "./footer"; // No need for .ts extension here
+import navbarItems from "./navbar"; // Import your new navbar file
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -13,6 +14,7 @@ const config: Config = {
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
+    faster: true, // Enable all the optimizations that will be part of Docusaurus v4
   },
 
   // Set the production url of your site here
@@ -89,20 +91,7 @@ const config: Config = {
         alt: 'My Site Logo',
         src: 'img/logo.svg',
       },
-      items: [
-        {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Tutorial',
-        },
-        { to: '/blog', label: 'Blog', position: 'left' },
-        {
-          href: 'https://github.com/facebook/docusaurus',
-          label: 'GitHub',
-          position: 'right',
-        },
-      ],
+      items: navbarItems, // Use the imported navbar items
     },
     footer: footer,
     prism: {
