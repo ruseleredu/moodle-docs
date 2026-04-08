@@ -79,6 +79,62 @@ const config: Config = {
     ],
   ],
 
+
+  plugins: [
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "adm", // Unique ID for this docs instance
+        path: "adm-docs", // Path to your adm docs folder
+        routeBasePath: "adm", // Base URL for these docs (e.g., yoursite.com/adm/...)
+        sidebarPath: require.resolve("./sidebarsAdm.js"), // Separate sidebar for ADM docs
+        // 👇 Add this line for the last update time
+        showLastUpdateTime: true,
+        // ... other options specific to your ADM docs
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "dev", // Unique ID for this docs instance
+        path: "dev-docs", // Path to your Developer docs folder
+        routeBasePath: "dev", // Base URL for these docs (e.g., yoursite.com/dev/...)
+        sidebarPath: require.resolve("./sidebarsDev.js"), // Separate sidebar for Developer docs
+        // 👇 Add this line for the last update time
+        showLastUpdateTime: true,
+        // ... other options specific to your Dev docs
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "edu", // Unique ID for this docs instance
+        path: "edu-docs", // Path to your Edu docs folder
+        routeBasePath: "edu", // Base URL for these docs (e.g., yoursite.com/dev/...)
+        sidebarPath: require.resolve("./sidebarsEdu.js"), // Separate sidebar for Edu docs
+        // 👇 Add this line for the last update time
+        showLastUpdateTime: true,
+        // ... other options specific to your Edu docs
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "qa", // Unique ID for this docs instance
+        path: "qa-docs", // Path to your QA docs folder
+        routeBasePath: "qa", // Base URL for these docs (e.g., yoursite.com/dev/...)
+        sidebarPath: require.resolve("./sidebarsQA.js"), // Separate sidebar for QA docs
+        // 👇 Add this line for the last update time
+        showLastUpdateTime: true,
+        // ... other options specific to your QA docs
+      },
+    ],
+  ],
+
   themeConfig: {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
