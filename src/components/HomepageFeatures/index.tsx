@@ -2,16 +2,21 @@ import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
+import Link from '@docusaurus/Link'; // Import this at the top
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
+  Svg: React.ComponentType<React.ComponentProps<'svg'>> | string;
   description: ReactNode;
+  className?: string;
+  link?: string; // Add this optional property
 };
+
 
 const FeatureList: FeatureItem[] = [
   {
     title: "Administrator",
+    link: '/adm/intro', // Internal path or url
     Svg: require("@site/static/img/build-design-game-svgrepo-com.svg").default,
     description: (
       <>
@@ -23,6 +28,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: "Developer",
+    link: '/dev/intro', // Internal path or url
     Svg: require("@site/static/img/development-web-development-svgrepo-com.svg")
       .default,
     description: (
@@ -35,6 +41,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: "Educator",
+    link: '/edu/intro', // Internal path or url
     Svg: require("@site/static/img/blackboard-svgrepo-com.svg").default,
     description: (
       <>
@@ -46,14 +53,31 @@ const FeatureList: FeatureItem[] = [
   },
 ];
 
-function Feature({ title, Svg, description }: FeatureItem) {
+// UPDATE: Explicitly type the function props using FeatureItem
+function Feature({ Svg, title, description, className, link }: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        {typeof Svg === 'string' ? (
+          <img
+            src={Svg}
+            // Uses your custom hilImage style, falls back to default if not provided
+            className={className ?? styles.featureSvg}
+            alt={title}
+          />
+        ) : (
+          <Svg className={styles.featureSvg} role="img" />
+        )}
       </div>
       <div className="text--center padding-horiz--md">
-        <Heading as="h3">{title}</Heading>
+        {/* If link exists, wrap the title. Otherwise, just show the title. */}
+        {link ? (
+          <Link to={link}>
+            <Heading as="h3">{title}</Heading>
+          </Link>
+        ) : (
+          <Heading as="h3">{title}</Heading>
+        )}
         <p>{description}</p>
       </div>
     </div>

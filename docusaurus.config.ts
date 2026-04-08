@@ -7,8 +7,8 @@ import navbarItems from "./navbar"; // Import your new navbar file
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: "Moodle Docs",
+  tagline: "Moodle is cool",
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -142,10 +142,10 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'My Site',
+      title: "Moodle Docs",
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        alt: "Moodle Docs Logo",
+        src: "img/logo.svg",
       },
       items: navbarItems, // Use the imported navbar items
     },
