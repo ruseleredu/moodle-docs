@@ -5,13 +5,34 @@ This website is built using [Docusaurus](https://docusaurus.io/), a modern stati
 ## Installation
 
 ```bash
-yarn
+npx create-docusaurus@latest moodle-docs classic --typescript
+```
+
+[Diagrams](https://docusaurus.io/docs/markdown-features/diagrams)
+
+```bash
+npm install --save @docusaurus/theme-mermaid
+```
+
+[Math Equations](https://docusaurus.io/docs/markdown-features/math-equations)
+
+```bash
+npm install --save remark-math@6 rehype-katex@7
+```
+
+## Clone repo
+
+```bash
+git clone https://github.com/AdrianoRuseler/moodle-docs.git
+cd moodle-docs
+npm i
 ```
 
 ## Local Development
 
 ```bash
-yarn start
+cd moodle-docs
+npm run start
 ```
 
 This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
@@ -19,7 +40,8 @@ This command starts a local development server and opens up a browser window. Mo
 ## Build
 
 ```bash
-yarn build
+npm run build
+npm run serve
 ```
 
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
@@ -29,33 +51,22 @@ This command generates static content into the `build` directory and can be serv
 Using SSH:
 
 ```bash
-USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> yarn deploy
+set GIT_USER=ruseleredu
+npm run deploy
 ```
 
 If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
 
+## Upgrade Docusaurus Packages
 
+To upgrade Docusaurus packages with the latest version, run the following command:
 
-  `npm start`
-    Starts the development server.
+```bash
+npm i @docusaurus/core@latest @docusaurus/preset-classic@latest @docusaurus/module-type-aliases@latest @docusaurus/types@latest
+```
 
-  `npm run build`
-    Bundles your website into static files for production.
+To ensure accurate Baseline data, please update:
 
-  `npm run serve`
-    Serves the built website locally.
-
-  `npm run deploy`
-    Publishes the website to GitHub pages.
-
-We recommend that you begin by typing:
-
-  `cd moodle-docs`
-  `npm start`
-  
+```bash
+npm i baseline-browser-mapping@latest -D
+```
