@@ -7,6 +7,7 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
+import MoodleReleases from "@site/src/components/MoodleReleases/MoodleReleases";
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -52,6 +53,11 @@ export default function Home(): ReactNode {
       <HomepageHeader />
       <main>
         <HomepageFeatures />
+
+        <div className="container">
+          <Heading as="h2">Moodle releases</Heading>
+          <MoodleReleases />
+        </div>
       </main>
     </Layout>
   );
