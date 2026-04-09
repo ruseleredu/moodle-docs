@@ -165,10 +165,6 @@
   white-space: nowrap;
 }
 
-.linksTd {
-  white-space: nowrap;
-}
-
 .dash {
   color: var(--ifm-color-emphasis-400);
 }
@@ -236,26 +232,6 @@
 [data-theme="dark"] .badge_eol          { background: #1f2937; color: #9ca3af; }
 [data-theme="dark"] .badge_experimental { background: #451a03; color: #fcd34d; }
 [data-theme="dark"] .badge_lts          { background: #052e16; color: #86efac; }
-
-/* ── Link buttons ────────────────────────────────────────────────────────── */
-
-.linkBtn {
-  display: inline-block;
-  font-size: 0.75rem;
-  padding: 3px 10px;
-  border: 1px solid var(--ifm-color-emphasis-300);
-  border-radius: var(--ifm-global-radius);
-  color: var(--ifm-color-primary);
-  text-decoration: none;
-  margin-right: 4px;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.linkBtn:hover {
-  background: var(--ifm-color-emphasis-100);
-  border-color: var(--ifm-color-primary);
-  text-decoration: none;
-}
 
 /* ── Release toggle button ───────────────────────────────────────────────── */
 

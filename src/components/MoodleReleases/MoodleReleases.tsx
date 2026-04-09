@@ -404,17 +404,11 @@ export default function MoodleReleases(): JSX.Element {
                 <SortHeader col="generalEndDate" label="General end" currentCol={sortCol} currentDir={sortDir} onSort={handleSort} />
                 <SortHeader col="securityEndDate" label="Security end" currentCol={sortCol} currentDir={sortDir} onSort={handleSort} />
                 <SortHeader col="count" label="Patch releases" currentCol={sortCol} currentDir={sortDir} onSort={handleSort} />
-                <th className={styles.th}>Links</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((v, i) => {
                 const status = getStatus(v);
-                const firstRelease = v.releases?.[0];
-                const upgradePath = firstRelease?.upgradePath;
-                const majorMinor = v.name.replace(".", "");
-                const docsUrl = `https://docs.moodle.org/${majorMinor}/en/`;
-
                 const releasePageUrl = `https://moodledev.io/general/releases/${v.name}`;
 
                 return (
@@ -444,18 +438,6 @@ export default function MoodleReleases(): JSX.Element {
                       <PatchRow version={v} index={i} />
                       {(!v.releases || v.releases.length === 0) && (
                         <span className={styles.dash}>—</span>
-                      )}
-                    </td>
-                    <td className={`${styles.td} ${styles.linksTd}`}>
-                      {upgradePath && (
-                        <a href={upgradePath} className={styles.linkBtn} target="_blank" rel="noopener noreferrer">
-                          Upgrade
-                        </a>
-                      )}
-                      {v.releases && v.releases.length > 0 && (
-                        <a href={docsUrl} className={styles.linkBtn} target="_blank" rel="noopener noreferrer">
-                          Docs
-                        </a>
                       )}
                     </td>
                   </tr>
