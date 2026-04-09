@@ -17,7 +17,7 @@ const FeatureList: FeatureItem[] = [
   {
     title: "Administrator",
     link: '/adm/intro', // Internal path or url
-    Svg: require("@site/static/img/build-design-game-svgrepo-com.svg").default,
+    Svg: require("@site/static/img/seo-maintenance-svgrepo-com.svg").default,
     description: (
       <>
         This role is vital for organizations, schools, and universities that use
@@ -29,7 +29,7 @@ const FeatureList: FeatureItem[] = [
   {
     title: "Developer",
     link: '/dev/intro', // Internal path or url
-    Svg: require("@site/static/img/development-web-development-svgrepo-com.svg").default,
+    Svg: require("@site/static/img/blog-seo-optimization-search-svgrepo-com.svg").default,
     description: (
       <>
         Due to Moodle's open-source nature, developers often engage with the
@@ -53,7 +53,7 @@ const FeatureList: FeatureItem[] = [
   {
     title: "QA",
     link: '/qa/intro', // Internal path or url
-    Svg: require("@site/static/img/seo-maintenance-svgrepo-com.svg").default,
+    Svg: require("@site/static/img/content-marketing-management-seo-svgrepo-com.svg").default,
     description: (
       <>
         It reduces the long-term cost of development by catching errors early in the "Shift Left" approach, where testing is integrated as early as possible in the development cycle.
