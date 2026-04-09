@@ -181,9 +181,15 @@
   gap: 8px;
 }
 
-.verNum {
+.verLink {
   font-weight: 600;
   font-size: 0.95rem;
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.verLink:hover {
+  text-decoration: underline;
 }
 
 /* ── Status dot ──────────────────────────────────────────────────────────── */

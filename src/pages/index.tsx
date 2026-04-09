@@ -55,7 +55,6 @@ export default function Home(): ReactNode {
         <HomepageFeatures />
 
         <div className="container">
-          <Heading as="h2">Moodle releases</Heading>
           <MoodleReleases />
         </div>
       </main>

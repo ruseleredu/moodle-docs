@@ -415,12 +415,21 @@ export default function MoodleReleases(): JSX.Element {
                 const majorMinor = v.name.replace(".", "");
                 const docsUrl = `https://docs.moodle.org/${majorMinor}/en/`;
 
+                const releasePageUrl = `https://moodledev.io/general/releases/${v.name}`;
+
                 return (
                   <tr key={v.name} className={`${styles.tr} ${styles[`row_${status}`]}`}>
                     <td className={styles.td}>
                       <span className={styles.verCell}>
                         <span className={`${styles.dot} ${styles[`dot_${status}`]}`} aria-hidden="true" />
-                        <span className={styles.verNum}>{v.name}</span>
+                        <a
+                          href={releasePageUrl}
+                          className={styles.verLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {v.name}
+                        </a>
                         {v.isLTS && <span className={`${styles.badge} ${styles.badge_lts}`}>LTS</span>}
                         {v.isExperimental && <span className={`${styles.badge} ${styles.badge_experimental}`}>Exp</span>}
                       </span>
