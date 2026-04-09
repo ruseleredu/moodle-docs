@@ -1,0 +1,67 @@
+---
+title: Moodle Releases
+description: Documentation on all aspects of Moodle site administration.
+---
+
+import MoodleReleases from "@site/src/components/MoodleReleases/MoodleReleases";
+import MoodleReleasesFiltered from "@site/src/components/MoodleReleases/MoodleReleasesFiltered";
+
+## Filtered releases
+
+{/* Only LTS branches */}
+
+### Only LTS branches
+
+```md
+<MoodleReleasesFiltered filterStatus="lts" />
+```
+
+<MoodleReleasesFiltered filterStatus="lts" />
+
+{/* All 4.x branches, oldest first, no patch releases column */}
+
+### All 4.x branches, oldest first, no patch releases column
+
+```md
+<MoodleReleasesFiltered
+  filterSeries="4"
+  sortCol="releaseDate"
+  sortDir={1}
+  hidePatchReleases
+/>
+```
+
+<MoodleReleasesFiltered
+  filterSeries="4"
+  sortCol="releaseDate"
+  sortDir={1}
+  hidePatchReleases
+/>
+
+{/* Upcoming releases */}
+
+### Upcoming releases
+
+```md
+<MoodleReleasesFiltered filterStatus="future" />
+```
+
+<MoodleReleasesFiltered filterStatus="future" />
+
+{/* Security-only, sorted by security end date */}
+
+### Security-only, sorted by security end date
+
+```md
+<MoodleReleasesFiltered filterStatus="security" sortCol="securityEndDate" />
+```
+
+<MoodleReleasesFiltered filterStatus="security" sortCol="securityEndDate" />
+
+## All releases
+
+```md
+<MoodleReleases />
+```
+
+<MoodleReleases />
