@@ -8,7 +8,7 @@ import navbarItems from "./navbar"; // Import your new navbar file
 
 const config: Config = {
   title: "Moodle Docs",
-  tagline: "Moodle is cool",
+  tagline: "Moodle is a free and open-source LMS written in PHP and distributed under the GNU General Public License.",
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
