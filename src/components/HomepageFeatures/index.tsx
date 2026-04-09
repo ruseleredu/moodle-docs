@@ -29,8 +29,7 @@ const FeatureList: FeatureItem[] = [
   {
     title: "Developer",
     link: '/dev/intro', // Internal path or url
-    Svg: require("@site/static/img/development-web-development-svgrepo-com.svg")
-      .default,
+    Svg: require("@site/static/img/development-web-development-svgrepo-com.svg").default,
     description: (
       <>
         Due to Moodle's open-source nature, developers often engage with the
@@ -42,7 +41,7 @@ const FeatureList: FeatureItem[] = [
   {
     title: "Educator",
     link: '/edu/intro', // Internal path or url
-    Svg: require("@site/static/img/blackboard-svgrepo-com.svg").default,
+    Svg: require("@site/static/img/seo-training-marketing-presentation-svgrepo-com.svg").default,
     description: (
       <>
         It goes beyond simply knowing how to use Moodle's features. Teaching
@@ -51,12 +50,22 @@ const FeatureList: FeatureItem[] = [
       </>
     ),
   },
+  {
+    title: "QA",
+    link: '/qa/intro', // Internal path or url
+    Svg: require("@site/static/img/seo-maintenance-svgrepo-com.svg").default,
+    description: (
+      <>
+        It reduces the long-term cost of development by catching errors early in the "Shift Left" approach, where testing is integrated as early as possible in the development cycle.
+      </>
+    ),
+  },
 ];
 
 // UPDATE: Explicitly type the function props using FeatureItem
 function Feature({ Svg, title, description, className, link }: FeatureItem) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx('col col--3', styles.feature, className)}>
       <div className="text--center">
         {typeof Svg === 'string' ? (
           <img

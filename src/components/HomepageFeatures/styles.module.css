@@ -1,11 +1,21 @@
 .features {
   display: flex;
   align-items: center;
-  padding: 2rem 0;
+  padding: 3rem 0;
   width: 100%;
 }
 
 .featureSvg {
   height: 200px;
   width: 200px;
+}
+
+.featureImage {
+  /* Set a fixed size for the image */
+  width: 100px;
+  height: auto; /* Maintain aspect ratio */
+
+  /* Or use a maximum size for responsiveness */
+  max-width: 100px;
+  max-height: 100px;
 }
