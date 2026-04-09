@@ -39,3 +39,10 @@
 .footer__link-item svg {
   display: none;
 }
+
+/* Target the announcement bar specifically */
+div[class*="announcementBar"] {
+  font-size: 1.1rem;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}

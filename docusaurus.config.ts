@@ -160,6 +160,13 @@ const config: Config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
     },
+    announcementBar: {
+      id: 'welcome_new_site', // Update this id when you launch a new major feature or make significant changes to the site
+      content: '🚀 New site is live! Looking for the old version? <a href="https://adrianoruseler.github.io/moodle-docs/">Access the Archive here!</a>.',
+      backgroundColor: '#f5f6f7', // Use a neutral "archival" grey
+      textColor: '#444444', // A darker color for better contrast with the background
+      isCloseable: true, // Let users dismiss it once they've read it
+    },
   } satisfies Preset.ThemeConfig,
 };
 
