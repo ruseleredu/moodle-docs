@@ -39,8 +39,9 @@
 
 .tableWrapper {
   overflow-x: auto;
-  border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: var(--ifm-global-radius);
+  text-align: center;
+  /* border: 2px solid var(--ifm-color-emphasis-200);
+   border-radius: var(--ifm-global-radius); */
 }
 
 .footer {
@@ -106,12 +107,14 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  text-align: center;
+  align-items: center;
   font-size: 0.85rem;
 }
 
 .th {
   padding: 10px 14px;
-  text-align: left;
+  text-align: center;
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -198,11 +201,21 @@
   display: inline-block;
 }
 
-.dot_future       { background: #7c3aed; }
-.dot_active       { background: #0284c7; }
-.dot_security     { background: #0891b2; }
-.dot_eol          { background: #9ca3af; }
-.dot_experimental { background: #d97706; }
+.dot_future {
+  background: #7c3aed;
+}
+.dot_active {
+  background: #0284c7;
+}
+.dot_security {
+  background: #0891b2;
+}
+.dot_eol {
+  background: #9ca3af;
+}
+.dot_experimental {
+  background: #d97706;
+}
 
 /* ── Status badges ───────────────────────────────────────────────────────── */
 
@@ -218,20 +231,56 @@
   letter-spacing: 0.04em;
 }
 
-.badge_future       { background: #ede9fe; color: #5b21b6; }
-.badge_active       { background: #e0f2fe; color: #0369a1; }
-.badge_security     { background: #cffafe; color: #0e7490; }
-.badge_eol          { background: #f3f4f6; color: #6b7280; }
-.badge_experimental { background: #fef3c7; color: #92400e; }
-.badge_lts          { background: #dcfce7; color: #166534; }
+.badge_future {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+.badge_active {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.badge_security {
+  background: #cffafe;
+  color: #0e7490;
+}
+.badge_eol {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.badge_experimental {
+  background: #fef3c7;
+  color: #92400e;
+}
+.badge_lts {
+  background: #dcfce7;
+  color: #166534;
+}
 
 /* Dark-mode badge overrides */
-[data-theme="dark"] .badge_future       { background: #3b0764; color: #c4b5fd; }
-[data-theme="dark"] .badge_active       { background: #0c2d48; color: #7dd3fc; }
-[data-theme="dark"] .badge_security     { background: #083344; color: #67e8f9; }
-[data-theme="dark"] .badge_eol          { background: #1f2937; color: #9ca3af; }
-[data-theme="dark"] .badge_experimental { background: #451a03; color: #fcd34d; }
-[data-theme="dark"] .badge_lts          { background: #052e16; color: #86efac; }
+[data-theme="dark"] .badge_future {
+  background: #3b0764;
+  color: #c4b5fd;
+}
+[data-theme="dark"] .badge_active {
+  background: #0c2d48;
+  color: #7dd3fc;
+}
+[data-theme="dark"] .badge_security {
+  background: #083344;
+  color: #67e8f9;
+}
+[data-theme="dark"] .badge_eol {
+  background: #1f2937;
+  color: #9ca3af;
+}
+[data-theme="dark"] .badge_experimental {
+  background: #451a03;
+  color: #fcd34d;
+}
+[data-theme="dark"] .badge_lts {
+  background: #052e16;
+  color: #86efac;
+}
 
 /* ── Release toggle button ───────────────────────────────────────────────── */
 
@@ -243,7 +292,9 @@
   font-size: 0.78rem;
   cursor: pointer;
   color: var(--ifm-color-emphasis-700);
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .releaseToggle:hover {
@@ -325,9 +376,20 @@
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
-  .searchInput { width: 100%; }
-  .controls { flex-direction: column; align-items: stretch; }
-  .statsRow { gap: 8px; }
-  .statCard { min-width: 0; }
-  .dateTd { display: none; }
+  .searchInput {
+    width: 100%;
+  }
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .statsRow {
+    gap: 8px;
+  }
+  .statCard {
+    min-width: 0;
+  }
+  .dateTd {
+    display: none;
+  }
 }

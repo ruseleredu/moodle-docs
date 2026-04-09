@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import type { JSX } from "react";
 import styles from "./MoodleReleases.module.css";
 import {
   DATA_URL,
