@@ -51,7 +51,7 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: "QA",
+    title: "Quality Assurance (QA)",
     link: '/qa/intro', // Internal path or url
     Svg: require("@site/static/img/content-marketing-management-seo-svgrepo-com.svg").default,
     description: (
