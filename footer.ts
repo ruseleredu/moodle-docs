@@ -63,6 +63,10 @@ const footer: ThemeConfig["footer"] = {
             title: "Plugins",
             items: [
                 {
+                    label: "moodle502",
+                    href: "https://github.com/AdrianoRuseler/moodle502-plugins",
+                },
+                {
                     label: "moodle501",
                     href: "https://github.com/AdrianoRuseler/moodle501-plugins",
                 },
@@ -111,8 +115,12 @@ const footer: ThemeConfig["footer"] = {
             title: "Self-hosting",
             items: [
                 {
-                    label: "Moodle 5.2dev",
+                    label: "Moodle Dev",
                     href: "https://integration.adrianoruseler.com",
+                },
+                {
+                    label: "Moodle 5.2+",
+                    href: "https://mdl52.adrianoruseler.com/",
                 },
                 {
                     label: "Moodle 5.1+",
@@ -193,10 +201,6 @@ const footer: ThemeConfig["footer"] = {
                 {
                     label: "Academy",
                     href: "https://moodle.academy/",
-                },
-                {
-                    label: "GitHub",
-                    href: "https://github.com/AdrianoRuseler/moodle-docs",
                 },
                 {
                     label: "SVG Repo",
