@@ -84,10 +84,13 @@ const footer: ThemeConfig["footer"] = {
                 },
             ],
         },
-
         {
             title: "Docker",
             items: [
+                {
+                    label: "alpine-moodle",
+                    href: "https://erseco.github.io/alpine-moodle/",
+                },
                 {
                     label: "moodle-docker",
                     href: "https://github.com/moodlehq/moodle-docker",

@@ -1,0 +1,44 @@
+---
+title: Moodle Alpine Docker
+description: Documentation for the Moodle Alpine Docker image, a lightweight containerized version of Moodle for development and testing purposes.
+---
+
+## Overview
+
+The Moodle Alpine Docker image is a lightweight containerized version of Moodle designed for development and testing purposes. It is based on the Alpine Linux distribution, which is known for its small size and security features. This image provides a convenient way to set up a Moodle environment quickly without the overhead of a full operating system.
+
+## Features
+
+- Lightweight: The Alpine Linux base keeps the image size small, making it faster to download and start.
+- Pre-configured: The image comes with Moodle pre-installed and configured for development use.
+- Easy to use: With a simple Docker command, you can have a Moodle instance up and running in minutes.
+
+## Usage
+
+To use the Moodle Alpine Docker image, follow these steps:
+
+1. Pull the image from the Docker registry:
+
+```bash
+docker pull erseco/alpine-moodle
+```
+
+2. Run the container:
+
+```bash
+docker run -d -p 80:80 --name alpine-moodle erseco/alpine-moodle
+```
+
+3. Access Moodle:
+   Open your web browser and navigate to `http://localhost`. You should see the Moodle installation page.
+4. Follow the installation prompts to set up your Moodle site.
+
+## Configuration
+
+You can customize the Moodle Alpine Docker image using environment variables. For example, to set the database type and password, you can run:
+
+```bash
+docker run -d -p 80:8080 -e MOODLE_DATABASE_TYPE=sqlite3 -e MOODLE_PASSWORD=ChangeMe123! -v moodledata:/var/www/moodledata erseco/alpine-moodle
+```
+
+This command sets the database type to SQLite and specifies a password for the Moodle admin user. The `-v` flag is used to create a persistent volume for Moodle data.
