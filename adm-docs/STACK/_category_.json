@@ -1,0 +1,8 @@
+{
+  "label": "STACK",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "Some STACK-related documentation."
+  }
+}

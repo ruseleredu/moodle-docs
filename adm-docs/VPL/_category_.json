@@ -1,0 +1,8 @@
+{
+  "label": "VPL",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "Some VPL-related documentation."
+  }
+}
