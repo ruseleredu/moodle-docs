@@ -6,6 +6,9 @@ slug: /alpine-moodle/persistence
 sidebar_position: 6
 ---
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # 💾 Persistence & Volumes
 
 Moodle stores state in three different places. Choosing which ones to persist determines how your backups work and how painful upgrades are.
@@ -49,24 +52,25 @@ Mounting `/var/www/html` as a named volume preserves installed plugins, custom t
 
 You have two patterns:
 
-=== "Persistent `moodlehtml` (default)"
+<Tabs>
+  <TabItem value="persistent" label="Persistent (default)" default>
 
-    Pros: plugins and themes survive restarts, `config.php` keeps customisations.
+**Pros:** plugins and themes survive restarts, `config.php` keeps customisations.
 
-    Cons: to upgrade Moodle you need to remove the `moodlehtml` volume, start the new image, then re-apply plugins/themes. Always back up first.
+**Cons:** to upgrade Moodle you need to remove the `moodlehtml` volume, start the new image, then re-apply plugins/themes. Always back up first.
 
-    ```bash
-    docker compose down
-    docker volume rm <project>_moodlehtml
-    docker compose pull
-    docker compose up -d
-    ```
+```bash
+docker compose down
+docker volume rm <project>_moodlehtml
+docker compose pull
+docker compose up -d
+```
 
-=== "Ephemeral `moodlehtml`"
+  </TabItem>
+  <TabItem value="ephemeral" label="Ephemeral">
+   **Pros:** upgrading Moodle is just `docker compose pull && docker compose up -d`.
 
-    Pros: upgrading Moodle is just `docker compose pull && docker compose up -d`.
-
-    Cons: you must re-install plugins and re-apply theme customisations on every rebuild, or install them via `POST_CONFIGURE_COMMANDS` on every start.
+    **Cons:** you must re-install plugins and re-apply theme customisations on every rebuild, or install them via `POST_CONFIGURE_COMMANDS` on every start.
 
     ```yaml
     services:
@@ -85,8 +89,12 @@ You have two patterns:
         moosh plugin-install --delete mod_attendance
     ```
 
-!!! info "Future improvement"
+  </TabItem>
+</Tabs>
+
+:::info[Future improvement]
 [#103](https://github.com/erseco/alpine-moodle/issues/103) tracks a finer-grained approach that would persist only `config.php`, themes and modules. Until that lands, pick the pattern that matches your risk tolerance.
+:::
 
 ## PostgreSQL 18+ volume path
 

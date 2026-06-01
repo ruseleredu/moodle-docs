@@ -6,6 +6,9 @@ slug: /alpine-moodle/upgrading
 sidebar_position: 9
 ---
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # 🔄 Upgrading
 
 How to move between Moodle versions safely.
@@ -31,7 +34,8 @@ This covers **database schema** upgrades. It does **not** by itself swap out the
 
 Your upgrade procedure depends on whether you persist `/var/www/html` as a named volume.
 
-=== "Without `moodlehtml` volume"
+<Tabs>
+  <TabItem value="Without" label="Without `moodlehtml` volume" default>
 
     The container replaces the Moodle code on every start. Upgrading is just:
 
@@ -42,8 +46,9 @@ Your upgrade procedure depends on whether you persist `/var/www/html` as a named
 
     Trade-off: plugins and themes must be re-installed on every boot (use `POST_CONFIGURE_COMMANDS` with Moosh).
 
-=== "With `moodlehtml` volume"
+    </TabItem>
 
+  <TabItem value="moodlehtml" label="With `moodlehtml` volume">
     Pinned Moodle code in a persistent volume will **not** be overwritten when you change the image tag ([#102](https://github.com/erseco/alpine-moodle/issues/102)). You will see logs like:
 
     ```
@@ -78,6 +83,10 @@ Your upgrade procedure depends on whether you persist `/var/www/html` as a named
         ```
 
     6. Reinstall any custom plugins and themes.
+
+    </TabItem>
+
+</Tabs>
 
 :::warning["Always back up first"]
 Upgrades that involve removing volumes are irreversible. Take a database dump and a tarball of `moodledata` before you run `docker volume rm`.
