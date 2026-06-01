@@ -15,7 +15,7 @@ Drop-in compose stacks for common use cases. Adapt the image tag, passwords and 
 ```yaml
 services:
   web:
-    image: erseco/alpine-php-webserver
+    image: ruseler/alpine-php-webserver
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -28,7 +28,7 @@ services:
 ```yaml
 services:
   web:
-    image: erseco/alpine-php-webserver
+    image: ruseler/alpine-php-webserver
     restart: unless-stopped
     environment:
       date_timezone: Europe/Madrid
@@ -60,7 +60,7 @@ volumes:
 ```yaml
 services:
   web:
-    image: erseco/alpine-php-webserver
+    image: ruseler/alpine-php-webserver
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -90,7 +90,7 @@ No host port required — the reverse proxy talks to the service over the intern
 ```yaml
 services:
   web:
-    image: erseco/alpine-php-webserver
+    image: ruseler/alpine-php-webserver
     restart: unless-stopped
     environment:
       REAL_IP_HEADER: X-Forwarded-For
@@ -135,7 +135,7 @@ services:
 A matching `Dockerfile`:
 
 ```dockerfile
-FROM erseco/alpine-php-webserver:latest
+FROM ruseler/alpine-php-webserver:latest
 
 USER root
 RUN apk add --no-cache composer
@@ -158,7 +158,7 @@ See [Composer & Building](composer.mdx) for the full recipe.
 ```yaml
 services:
   web:
-    image: erseco/alpine-php-webserver
+    image: ruseler/alpine-php-webserver
     restart: unless-stopped
     environment:
       # Serve uploaded files / large POSTs

@@ -27,7 +27,7 @@ services:
       - postgres:/var/lib/postgresql
 
   moodle:
-    image: erseco/alpine-moodle
+    image: ruseler/alpine-moodle
     restart: unless-stopped
     environment:
       SITE_URL: http://localhost
@@ -68,7 +68,7 @@ services:
     restart: unless-stopped
 
   moodle:
-    image: erseco/alpine-moodle
+    image: ruseler/alpine-moodle
     restart: unless-stopped
     environment:
       SITE_URL: https://moodle.example.com
@@ -114,7 +114,7 @@ services:
       - postgres:/var/lib/postgresql
 
   moodle:
-    image: erseco/alpine-moodle
+    image: ruseler/alpine-moodle
     restart: unless-stopped
     environment:
       SITE_URL: https://moodle.example.com
@@ -167,7 +167,7 @@ services:
       - mariadb:/var/lib/mysql
 
   moodle:
-    image: erseco/alpine-moodle
+    image: ruseler/alpine-moodle
     restart: unless-stopped
     environment:
       DB_TYPE: mariadb
@@ -201,7 +201,7 @@ Moodle expects `utf8mb4`, a large row format and `innodb_file_per_table`. The co
 ```yaml
 services:
   moodle:
-    image: erseco/alpine-moodle
+    image: ruseler/alpine-moodle
     restart: unless-stopped
     environment:
       MOODLE_DATABASE_TYPE: sqlite3
@@ -225,7 +225,7 @@ You can run any Moodle tag available in the upstream repository:
 ```yaml
 services:
   moodle:
-    image: erseco/alpine-moodle:v5.0.2
+    image: ruseler/alpine-moodle:v5.0
 ```
 
 Or build the image yourself for a specific Moodle version:
@@ -236,7 +236,7 @@ services:
     build:
       context: .
       args:
-        MOODLE_VERSION: v5.0.2
+        MOODLE_VERSION: v5.0
 ```
 
 Available tags: https://github.com/moodle/moodle/tags

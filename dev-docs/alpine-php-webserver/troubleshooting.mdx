@@ -31,14 +31,14 @@ Or use a named Docker volume, which gets the right ownership automatically.
 **Fix**: mount your code into `/var/www/html`:
 
 ```bash
-docker run -p 8080:8080 -v "$PWD/app:/var/www/html" erseco/alpine-php-webserver
+docker run -p 8080:8080 -v "$PWD/app:/var/www/html" ruseler/alpine-php-webserver
 ```
 
 ## Symfony / Laravel URLs have a `?q=` query parameter
 
 **Cause**: You are on an old tag from before [#55](https://github.com/erseco/alpine-php-webserver/issues/55) was fixed. The current `try_files` rule is Symfony-friendly.
 
-**Fix**: `docker pull erseco/alpine-php-webserver` to update. If you really need to stay on an older tag, mount a replacement `server-conf.d/` snippet that overrides the default location block — or set `DISABLE_DEFAULT_LOCATION=true` and provide your own.
+**Fix**: `docker pull ruseler/alpine-php-webserver` to update. If you really need to stay on an older tag, mount a replacement `server-conf.d/` snippet that overrides the default location block — or set `DISABLE_DEFAULT_LOCATION=true` and provide your own.
 
 ## Clean URLs / custom routing don't work
 
@@ -60,7 +60,7 @@ volumes:
 **Fix**: set `WORKDIR` and `COPY` before calling Composer:
 
 ```dockerfile
-FROM erseco/alpine-php-webserver:latest
+FROM ruseler/alpine-php-webserver:latest
 USER root
 RUN apk add --no-cache composer
 

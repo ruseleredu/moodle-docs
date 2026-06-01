@@ -11,7 +11,7 @@ sidebar_position: 2
 ## Run it
 
 ```bash
-docker run --rm -p 8080:8080 erseco/alpine-php-webserver
+docker run --rm -p 8080:8080 ruseler/alpine-php-webserver
 ```
 
 Open http://localhost:8080/. You'll see `phpinfo()` from the bundled `index.php`. The static probe at http://localhost:8080/test.html is also served.
@@ -25,7 +25,7 @@ Bind-mount a local directory into `/var/www/html`:
 ```bash
 docker run --rm -p 8080:8080 \
   -v "$PWD/php:/var/www/html" \
-  erseco/alpine-php-webserver
+  ruseler/alpine-php-webserver
 ```
 
 Nginx serves static files directly and hands `*.php` requests to PHP-FPM via the Unix socket at `/run/php-fpm.sock`.
@@ -48,7 +48,7 @@ Save as `docker-compose.yml` next to your code:
 ```yaml
 services:
   web:
-    image: erseco/alpine-php-webserver
+    image: ruseler/alpine-php-webserver
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -70,7 +70,7 @@ See [Docker Compose](docker-compose.mdx) for more realistic stacks (MariaDB, Red
 **8080** inside the container. The image intentionally does not bind privileged ports because it runs as `nobody`. Map whatever public port you want:
 
 ```bash
-docker run --rm -p 80:8080 erseco/alpine-php-webserver   # host 80 → container 8080
+docker run --rm -p 80:8080 ruseler/alpine-php-webserver   # host 80 → container 8080
 ```
 
 ## Tweaking limits on the fly
@@ -85,7 +85,7 @@ docker run --rm -p 8080:8080 \
   -e memory_limit=256M \
   -e date_timezone=Europe/Madrid \
   -v "$PWD/php:/var/www/html" \
-  erseco/alpine-php-webserver
+  ruseler/alpine-php-webserver
 ```
 
 See [Environment Variables](environment-variables.mdx) for the full reference.

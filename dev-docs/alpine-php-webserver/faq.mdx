@@ -13,7 +13,7 @@ sidebar_position: 12
 **8080**. Always. The image intentionally avoids privileged ports because it runs as `nobody`. Publish on any host port you like:
 
 ```bash
-docker run -p 80:8080 erseco/alpine-php-webserver
+docker run -p 80:8080 ruseler/alpine-php-webserver
 ```
 
 ## Which user runs inside the container?
@@ -33,7 +33,7 @@ You don't install it into this image — you build your own thin image on top wi
 Build a derived image:
 
 ```dockerfile
-FROM erseco/alpine-php-webserver:latest
+FROM ruseler/alpine-php-webserver:latest
 USER root
 RUN apk add --no-cache php84-ldap php84-pecl-redis
 USER nobody
@@ -73,7 +73,7 @@ Yes — add a `runit` entry. Each daemon lives in `/etc/service/<name>/run`. See
 
 ## Does it support multi-arch?
 
-Yes: `amd64`, `arm64`, `arm/v7`, `arm/v6`, `386`, `ppc64le`, `s390x`. Just pull `erseco/alpine-php-webserver` on any of them.
+Yes: `amd64`, `arm64`, `arm/v7`, `arm/v6`, `386`, `ppc64le`, `s390x`. Just pull `ruseler/alpine-php-webserver` on any of them.
 
 ## What's the difference between `conf.d/` and `server-conf.d/`?
 

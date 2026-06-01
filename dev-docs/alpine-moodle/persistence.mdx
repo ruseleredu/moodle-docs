@@ -31,7 +31,7 @@ services:
       - postgres:/var/lib/postgresql # (1)
 
   moodle:
-    image: erseco/alpine-moodle
+    image: ruseler/alpine-moodle
     volumes:
       - moodledata:/var/www/moodledata # (2)
       - moodlehtml:/var/www/html # (3)

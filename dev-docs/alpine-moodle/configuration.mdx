@@ -133,7 +133,8 @@ services:
     build:
       context: .
       args:
-        MOODLE_VERSION: v5.0.2
+        MOODLE_BRANCH: MOODLE_502_STABLE
+        MOODLE_PGLS: AdrianoRuseler/moodle502-plugins
 ```
 
 Or use a pre-built tag:
@@ -141,7 +142,7 @@ Or use a pre-built tag:
 ```yaml
 services:
   moodle:
-    image: erseco/alpine-moodle:v5.0.2
+    image: ruseler/alpine-moodle:5.2
 ```
 
 Available Moodle tags: https://github.com/moodle/moodle/tags

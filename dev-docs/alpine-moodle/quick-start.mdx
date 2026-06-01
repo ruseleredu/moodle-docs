@@ -26,7 +26,7 @@ docker run -d --name moodle \
   -e MOODLE_PASSWORD=ChangeMe123! \
   -e SITE_URL=http://localhost \
   -v moodledata:/var/www/moodledata \
-  erseco/alpine-moodle
+  ruseler/alpine-moodle
 ```
 
 Then watch the logs until initialization finishes:
@@ -54,7 +54,7 @@ services:
       - postgres:/var/lib/postgresql
 
   moodle:
-    image: erseco/alpine-moodle
+    image: ruseler/alpine-moodle
     restart: unless-stopped
     environment:
       SITE_URL: http://localhost

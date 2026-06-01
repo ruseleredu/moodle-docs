@@ -62,7 +62,7 @@ Yes — set `AUTO_UPDATE_MOODLE=false`. The container will start without running
 
 ## Which architectures are supported?
 
-`amd64`, `arm64`, `arm/v7`, `arm/v6`, `386`, `ppc64le`, `s390x`. Pull `erseco/alpine-moodle` on any of them and Docker will fetch the right variant.
+`amd64`, `arm64`, `arm/v7`, `arm/v6`, `386`, `ppc64le`, `s390x`. Pull `ruseler/alpine-moodle` on any of them and Docker will fetch the right variant.
 
 ## Does the image include Redis / PostgreSQL / MariaDB?
 
@@ -102,10 +102,6 @@ In `/var/www/moodledata/`. Mount a volume there to persist them. See [Persistenc
 6. It applies all the Moodle `cfg.php` tweaks (SMTP, paths, debug).
 7. It runs any `POST_CONFIGURE_COMMANDS`.
 8. It starts Nginx, PHP-FPM and the cron loop under `runit`.
-
-## Can I contribute?
-
-Yes — open an issue or a PR at https://github.com/erseco/alpine-moodle. Documentation PRs are very welcome; the docs site lives under `docs/` and is built with Zensical.
 
 ---
 

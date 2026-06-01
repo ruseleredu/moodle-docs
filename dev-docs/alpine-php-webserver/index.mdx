@@ -20,7 +20,7 @@ This documentation is a fork of [`erseco/alpine-php-webserver`](https://github.c
 
 ## What is this image?
 
-`erseco/alpine-php-webserver` packages Nginx, PHP-FPM and a handful of common PHP extensions into a **~25 MB** container ready to serve any PHP application. It is designed to be:
+`ruseler/alpine-php-webserver` packages Nginx, PHP-FPM and a handful of common PHP extensions into a **~25 MB** container ready to serve any PHP application. It is designed to be:
 
 - **Small** — Alpine base, single-process-group runtime via [`runit`](http://smarden.org/runit/).
 - **Secure** — Nginx and PHP-FPM run as the unprivileged `nobody` user.
@@ -28,7 +28,7 @@ This documentation is a fork of [`erseco/alpine-php-webserver`](https://github.c
 - **Extensible** — drop extra daemons into `/etc/service/<name>/run`, init scripts into `/docker-entrypoint-init.d/`, Nginx snippets into `/etc/nginx/conf.d/` or `/etc/nginx/server-conf.d/`.
 - **Configurable via env vars** — every meaningful PHP / Nginx setting is templated at startup via `envsubst`.
 
-This image is the **base for [`erseco/alpine-moodle`](https://github.com/erseco/alpine-moodle)** and powers numerous Symfony, Laravel, WordPress and plain PHP deployments.
+This image is the **base for [`ruseler/alpine-moodle`](https://github.com/AdrianoRuseler/alpine-moodle)** and powers numerous Symfony, Laravel, WordPress and plain PHP deployments.
 
 ## Highlights
 
@@ -59,7 +59,11 @@ This image is the **base for [`erseco/alpine-moodle`](https://github.com/erseco/
 ## Minimal example
 
 ```bash
-docker run --rm -p 8080:8080 erseco/alpine-php-webserver
+docker push ruseler/alpine-php-webserver:tagname
+```
+
+```bash
+docker run --rm -p 8080:8080 ruseler/alpine-php-webserver
 ```
 
 - http://localhost:8080/ — `phpinfo()`
@@ -68,15 +72,14 @@ docker run --rm -p 8080:8080 erseco/alpine-php-webserver
 Mount your own code to serve it:
 
 ```bash
-docker run --rm -p 8080:8080 -v "$PWD/php:/var/www/html" erseco/alpine-php-webserver
+docker run --rm -p 8080:8080 -v "$PWD/php:/var/www/html" ruseler/alpine-php-webserver
 ```
 
 ## Project links
 
-- Source code: https://github.com/erseco/alpine-php-webserver
-- Docker Hub: https://hub.docker.com/r/erseco/alpine-php-webserver
-- GitHub Container Registry: `ghcr.io/erseco/alpine-php-webserver`
-- Issue tracker: https://github.com/erseco/alpine-php-webserver/issues
+- Source code: https://github.com/AdrianoRuseler/alpine-php-webserver
+- Docker Hub: https://hub.docker.com/r/ruseler/alpine-php-webserver
+- Issue tracker: https://github.com/AdrianoRuseler/alpine-php-webserver/issues
 
 ---
 

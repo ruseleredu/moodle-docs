@@ -90,7 +90,7 @@ The image ships with a curated set of PHP 8.4 extensions — enough for most fra
 Need something else (e.g. `ldap`, `redis`, `imagick`)? Build a thin image on top — see [Composer & Building](composer.mdx):
 
 ```dockerfile
-FROM erseco/alpine-php-webserver:latest
+FROM ruseler/alpine-php-webserver:latest
 USER root
 RUN apk add --no-cache php84-ldap php84-pecl-redis
 USER nobody
@@ -103,7 +103,7 @@ The entrypoint only manages `custom.ini`. You can drop additional `.ini` files i
 ```bash
 docker run --rm -p 8080:8080 \
   -v "$PWD/90-my-app.ini:/etc/php84/conf.d/90-my-app.ini:ro" \
-  erseco/alpine-php-webserver
+  ruseler/alpine-php-webserver
 ```
 
 Filename convention: `NN-name.ini` where `NN` controls load order. Use a number ≥ `90` to override the image defaults.

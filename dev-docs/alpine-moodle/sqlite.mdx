@@ -32,7 +32,7 @@ docker run -d --name moodle \
   -e MOODLE_USERNAME=admin \
   -e MOODLE_PASSWORD=ChangeMe123! \
   -v moodledata:/var/www/moodledata \
-  erseco/alpine-moodle
+  ruseler/alpine-moodle
 ```
 
 Open `<http://localhost>`, log in with `admin  / ChangeMe123!`, done.
@@ -42,7 +42,7 @@ Open `<http://localhost>`, log in with `admin  / ChangeMe123!`, done.
 ```yaml
 services:
   moodle:
-    image: erseco/alpine-moodle
+    image: ruseler/alpine-moodle
     restart: unless-stopped
     environment:
       MOODLE_DATABASE_TYPE: sqlite3

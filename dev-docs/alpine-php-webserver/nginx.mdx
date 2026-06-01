@@ -33,7 +33,7 @@ This split was added in response to [#29](https://github.com/erseco/alpine-php-w
 ```bash
 docker run --rm -p 8080:8080 \
   -v "$PWD/my-location.conf:/etc/nginx/server-conf.d/my-location.conf:ro" \
-  erseco/alpine-php-webserver
+  ruseler/alpine-php-webserver
 ```
 
 Compose:
@@ -41,7 +41,7 @@ Compose:
 ```yaml
 services:
   web:
-    image: erseco/alpine-php-webserver
+    image: ruseler/alpine-php-webserver
     volumes:
       - ./app:/var/www/html
       - ./nginx/my-location.conf:/etc/nginx/server-conf.d/my-location.conf:ro
@@ -75,7 +75,7 @@ This works for WordPress, Symfony, Laravel and most front-controller frameworks.
 ```yaml
 services:
   web:
-    image: erseco/alpine-php-webserver
+    image: ruseler/alpine-php-webserver
     environment:
       DISABLE_DEFAULT_LOCATION: "true"
     volumes:
@@ -113,7 +113,7 @@ If you really need a different `nginx.conf`, mount your own over `/etc/nginx/ngi
 ```bash
 docker run --rm -p 8080:8080 \
   -v "$PWD/nginx.conf:/etc/nginx/nginx.conf:ro" \
-  erseco/alpine-php-webserver
+  ruseler/alpine-php-webserver
 ```
 
 ## Large uploads

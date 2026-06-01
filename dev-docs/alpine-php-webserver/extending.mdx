@@ -26,7 +26,7 @@ exec 2>&1 chpst -u memcache /usr/bin/memcached
 Then in your `Dockerfile`:
 
 ```dockerfile
-FROM erseco/alpine-php-webserver:latest
+FROM ruseler/alpine-php-webserver:latest
 
 USER root
 RUN apk add --no-cache memcached \
@@ -98,7 +98,7 @@ docker compose exec --user root web php -r 'echo PHP_VERSION, PHP_EOL;'
 Packaged in Alpine? One line:
 
 ```dockerfile
-FROM erseco/alpine-php-webserver:latest
+FROM ruseler/alpine-php-webserver:latest
 
 USER root
 RUN apk add --no-cache php84-ldap php84-pecl-redis php84-pecl-mongodb
@@ -115,12 +115,12 @@ You don't always need a new image. For quick tweaks, mount a file directly:
 # Extra PHP settings
 docker run --rm -p 8080:8080 \
   -v "$PWD/90-app.ini:/etc/php84/conf.d/90-app.ini:ro" \
-  erseco/alpine-php-webserver
+  ruseler/alpine-php-webserver
 
 # Extra Nginx server-block rules
 docker run --rm -p 8080:8080 \
   -v "$PWD/routes.conf:/etc/nginx/server-conf.d/routes.conf:ro" \
-  erseco/alpine-php-webserver
+  ruseler/alpine-php-webserver
 ```
 
 See [Nginx Configuration](nginx.mdx) and [PHP Configuration](php.mdx) for the directory conventions.

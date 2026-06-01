@@ -19,7 +19,7 @@ docker run --rm -it \
   -v "$PWD:/var/www/html" \
   -w /var/www/html \
   --user root \
-  erseco/alpine-php-webserver \
+  ruseler/alpine-php-webserver \
   sh -c "apk add --no-cache composer && composer install"
 ```
 
@@ -32,7 +32,7 @@ Use this only for one-off tasks. Adding packages at runtime every boot is slow a
 This is the pattern you want for CI/CD pipelines:
 
 ```dockerfile
-FROM erseco/alpine-php-webserver:latest
+FROM ruseler/alpine-php-webserver:latest
 
 USER root
 RUN apk add --no-cache composer
@@ -83,7 +83,7 @@ COPY . .
 RUN composer dump-autoload --no-dev --classmap-authoritative
 
 # ---- runtime stage ----
-FROM erseco/alpine-php-webserver:latest
+FROM ruseler/alpine-php-webserver:latest
 
 COPY --from=build --chown=nobody:nobody /app /var/www/html
 WORKDIR /var/www/html
@@ -101,7 +101,7 @@ Private repositories need an auth token. Pass it as a build secret so it never e
 
 ```dockerfile
 # syntax=docker/dockerfile:1.6
-FROM erseco/alpine-php-webserver:latest
+FROM ruseler/alpine-php-webserver:latest
 
 USER root
 RUN apk add --no-cache composer
