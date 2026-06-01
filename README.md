@@ -70,3 +70,9 @@ To ensure accurate Baseline data, please update:
 ```bash
 npm i baseline-browser-mapping@latest -D
 ```
+
+To clear the Rspack cache via the CLI:
+
+```bash
+rmdir /s /q node_modules\.cache\rspack
+```
