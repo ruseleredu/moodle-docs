@@ -159,6 +159,19 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: [
+        // https://prismjs.com/#supported-languages
+        "autohotkey",
+        "arduino",
+        "apacheconf",
+        "nginx",
+        "bash",
+        "matlab",
+        "powershell",
+        "ini",
+        "latex",
+        "php",
+      ],
     },
     announcementBar: {
       id: 'welcome_new_site', // Update this id when you launch a new major feature or make significant changes to the site
