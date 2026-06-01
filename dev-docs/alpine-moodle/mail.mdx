@@ -1,0 +1,121 @@
+---
+id: alpine-moodle-mail
+title: ✉️ Mailpit
+description: How to use Mailpit for email testing in Moodle
+slug: /alpine-moodle/mail
+sidebar_position: 8
+---
+
+# ✉️ Mailpit
+
+[Mailpit](https://mailpit.axllent.org/) - email & SMTP testing tool with API for developers
+
+```yml
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    ports:
+      - 8025:8025
+      - 1025:1025
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+```
+
+## Email / SMTP
+
+| Variable                      | Default                | Description               |
+| ----------------------------- | ---------------------- | ------------------------- |
+| `SMTP_HOST`                   | `smtp.gmail.com`       | SMTP server hostname.     |
+| `SMTP_PORT`                   | `587`                  | SMTP server port.         |
+| `SMTP_USER`                   | `your_email@gmail.com` | SMTP username.            |
+| `SMTP_PASSWORD`               | `your_password`        | SMTP password.            |
+| `SMTP_PROTOCOL`               | `tls`                  | `tls`, `ssl` or empty.    |
+| `MOODLE_MAIL_NOREPLY_ADDRESS` | `noreply@localhost`    | Used as `noreplyaddress`. |
+| `MOODLE_MAIL_PREFIX`          | `[moodle]`             | Email subject prefix.     |
+
+## Mailpit with Moodle
+
+Good for evaluation and local development.
+
+```yaml
+services:
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+
+  mariadb:
+    image: linuxserver/mariadb:latest
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=moodle_root_pass
+      - MYSQL_DATABASE=moodle
+      - MYSQL_USER=moodle
+      - MYSQL_PASSWORD=moodle
+    volumes:
+      - mariadb_data:/config
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    environment:
+      - MP_MAX_MESSAGES=5000
+      - MP_DATABASE=/data/mailpit.db
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+
+  moodle:
+    image: ruseler/alpine-moodle:5.2
+    restart: unless-stopped
+    environment:
+      LANG: en_US.UTF-8
+      LANGUAGE: en_US:en
+      SITE_URL: http://localhost
+      DB_TYPE: mariadb
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_NAME: moodle
+      DB_USER: moodle
+      DB_PASS: moodle
+      DB_PREFIX: mdl_
+      REDIS_HOST: redis
+      REVERSEPROXY: "false"
+      SSLPROXY: "false"
+      MOODLE_EMAIL: admin@host.docker.internal
+      MOODLE_LANGUAGE: en
+      MOODLE_USERNAME: admin
+      MOODLE_PASSWORD: M@0dl3ing
+      MOODLE_MAIL_NOREPLY_ADDRESS: noreply@host.docker.internal
+      MOODLE_MAIL_PREFIX: "[moodle]"
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      PRE_CONFIGURE_COMMANDS: |
+        echo 'This is a pre-configure command'
+      POST_CONFIGURE_COMMANDS: |
+        echo 'Starting background Moodle cron loop...'
+        sh -c 'while true; do php /var/www/html/admin/cli/cron.php; sleep 60; done' &
+    ports:
+      - "80:8080" # Adjusted to standard internal web port 80. Change back to 80:8080 if the image specifically uses 8080 internally.
+    volumes:
+      - moodledata:/var/www/moodledata
+      - moodlehtml:/var/www/html
+    depends_on:
+      - mariadb
+      - redis
+
+volumes:
+  mariadb_data:
+  moodledata:
+  moodlehtml:
+```
