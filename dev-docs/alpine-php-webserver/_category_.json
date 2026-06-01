@@ -1,0 +1,8 @@
+{
+  "label": "Alpine PHP Webserver",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "A minimal Nginx + PHP-FPM Docker image built on Alpine Linux."
+  }
+}

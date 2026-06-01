@@ -1,0 +1,8 @@
+{
+  "label": "Alpine Moodle",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "A lightweight Moodle Docker image built on Alpine Linux."
+  }
+}
