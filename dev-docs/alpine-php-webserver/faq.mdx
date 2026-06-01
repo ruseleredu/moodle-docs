@@ -26,7 +26,7 @@ docker run -p 80:8080 erseco/alpine-php-webserver
 
 ## How do I install Composer?
 
-You don't install it into this image — you build your own thin image on top with `apk add --no-cache composer`. See [Composer & Building](composer.mdxx) for the recipe.
+You don't install it into this image — you build your own thin image on top with `apk add --no-cache composer`. See [Composer & Building](composer.mdx) for the recipe.
 
 ## How do I add a PHP extension that isn't bundled?
 
@@ -51,7 +51,7 @@ For the Docker healthcheck. It is locked down to `127.0.0.1` ([#20](https://gith
 
 ## How do I change PHP settings?
 
-Environment variables. The entrypoint expands `/etc/php84/conf.d/custom.ini.tpl` through `envsubst`. See [PHP Configuration](php.mdxx) and the full [Environment Variables](environment-variables.mdxx) reference.
+Environment variables. The entrypoint expands `/etc/php84/conf.d/custom.ini.tpl` through `envsubst`. See [PHP Configuration](php.mdx) and the full [Environment Variables](environment-variables.mdx) reference.
 
 For settings not exposed as env vars, drop your own `.ini` file into `/etc/php84/conf.d/`:
 
@@ -65,11 +65,11 @@ For settings not exposed as env vars, drop your own `.ini` file into `/etc/php84
 docker compose exec --user root web sh
 ```
 
-Used for installing debug tools, inspecting file ownership, or running one-off apk commands. See [Extending the Image](extending.mdxx).
+Used for installing debug tools, inspecting file ownership, or running one-off apk commands. See [Extending the Image](extending.mdx).
 
 ## Can I run additional services (queue worker, supervisor) in the same container?
 
-Yes — add a `runit` entry. Each daemon lives in `/etc/service/<name>/run`. See [Extending the Image](extending.mdxx) for the full pattern, or read the bundled `nginx` and `php` service scripts for working examples.
+Yes — add a `runit` entry. Each daemon lives in `/etc/service/<name>/run`. See [Extending the Image](extending.mdx) for the full pattern, or read the bundled `nginx` and `php` service scripts for working examples.
 
 ## Does it support multi-arch?
 
@@ -94,11 +94,11 @@ environment:
   opcache_validate_timestamps: "0"
 ```
 
-And **restart the container on every deploy** — with `validate_timestamps=0`, PHP will not re-read changed files on its own. See [PHP Configuration](php.mdxx).
+And **restart the container on every deploy** — with `validate_timestamps=0`, PHP will not re-read changed files on its own. See [PHP Configuration](php.mdx).
 
 ## How do I get the real client IP?
 
-Set `REAL_IP_FROM` to the list of trusted proxies. Real IP restoration is disabled by default for safety. See [Reverse Proxy & Trusted IPs](reverse-proxy.mdxx).
+Set `REAL_IP_FROM` to the list of trusted proxies. Real IP restoration is disabled by default for safety. See [Reverse Proxy & Trusted IPs](reverse-proxy.mdx).
 
 ## What's the image based on? Can I use a newer Alpine version?
 
