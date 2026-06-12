@@ -10,6 +10,10 @@ The main community website for STACK is https://stack-assessment.org/
 It is important to confirm that STACK has been installed correctly, and that it is connecting to the CAS.
 https://docs.stack-assessment.org/en/Installation/Testing_installation/
 
+## A maxima CAS server for STACK
+
+- https://github.com/mathinstitut/goemaxima
+
 ### maxima version
 
 ```bash
@@ -19,6 +23,12 @@ maxima --list-avail
 ```
 
 ## Docker
+
+- https://github.com/mathinstitut/goemaxima#using-the-docker-image
+
+### Using a bundled stackmaxima
+
+- https://hub.docker.com/r/mathinstitut/goemaxima
 
 ```bash
 # Create a directory for goemaxima
@@ -40,22 +50,20 @@ sudo docker compose pull
 
 # Create and start goemaxima
 sudo docker compose down
-
 sudo docker compose pull
-
 sudo docker compose up -d
-
-
 ```
 
-image: mathinstitut/goemaxima:2025073100-latest
+```bash
+docker pull mathinstitut/goemaxima:2026042200-latest
+```
 
 docker-compose.yml
 
 ```yml
 services:
   goemaxima:
-    image: mathinstitut/goemaxima:2025040100-latest
+    image: mathinstitut/goemaxima:2026042200-latest
     container_name: goemaxima_container
     ports:
       - "8081:8080"
