@@ -1,0 +1,170 @@
+---
+title: Setup for vpl.mini.pc
+description: Secure execution environment, used by the Virtual Programming Lab (VPL) Moodle plugin.
+---
+
+## Architecture Overview
+
+The system uses a 3-tier isolated architecture to securely handle student code execution:
+
+```
+[ User Browser ]
+       │ (HTTPS / Secure WebSockets wss://)
+       ▼
+[ Apache Reverse Proxy ] (Handles SSL / Rewrites WebSockets)
+       │ (HTTP / Plain WebSockets ws:// via Port 7000)
+       ▼
+[ Docker Container: vpl-jail ] (Isolated sandbox with CPU/Memory limits)
+```
+
+---
+
+## 1. Docker Compose Configuration (`docker-compose.yml`)
+
+This file manages the isolated Virtual Programming Lab (VPL) execution environment.
+
+```yaml
+services:
+  vpljail:
+    image: jcrodriguezvpl/jail-alpine-full:latest
+    container_name: vpl-jail
+    ports:
+      - "7000:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - VPL_JAIL_PORT=80
+      - VPL_JAIL_URLPATH=/
+      - VPL_JAIL_SECURE_PORT=0 # SSL termination is handled by Apache
+    volumes:
+      - vpl_data:/var/vpl_jail
+    restart: always
+    networks:
+      - vpljail_network
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+
+volumes:
+  vpl_data:
+    driver: local
+
+networks:
+  vpljail_network:
+    driver: bridge
+```
+
+How to Run It
+
+1. Save the above configuration to a file named `docker-compose.yml`.
+2. In the terminal, navigate to the directory containing `docker-compose.yml` and execute:
+
+```bash
+docker-compose up -d
+```
+
+This command will start the VPL jail container in detached mode. The container will be accessible on port 7000 of the host machine, and it will be ready to handle requests from the Apache reverse proxy.
+
+To view real-time logs from the VPL jail container, use the following command:
+
+```bash
+docker compose logs -f vpljail
+```
+
+---
+
+## 2. Apache Reverse Proxy Setup (`VirtualHost`)
+
+This configuration terminates SSL, applies security headers, fixes the downstream port mapping issues, and proxies standard HTTP and real-time WebSocket traffic.
+
+```apacheconf
+<VirtualHost *:443>
+    ServerName vpl.mini.pc
+
+    SSLEngine on
+    SSLCertificateFile    /etc/ssl/certs/vpl.mini.pc-selfsigned.crt
+    SSLCertificateKeyFile /etc/ssl/private/vpl.mini.pc-selfsigned.key
+
+    # 1. Security Headers
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always set X-Frame-Options DENY
+    Header always set X-Content-Type-Options nosniff
+
+    # 2. Fix Port/Protocol Forwarding (Prevents the :0 port bug)
+    ProxyPreserveHost On
+    RequestHeader set X-Forwarded-Port "443"
+    RequestHeader set X-Forwarded-Proto "https"
+
+    # 3. WebSocket Upgrade Routing (CRITICAL: Must come first)
+    RewriteEngine On
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule ^/?(.*) "ws://127.0.0.1:7000/$1" [P,L]
+
+    # 4. Standard HTTP Proxy Fallback
+    ProxyPass / http://127.0.0.1:7000/
+    ProxyPassReverse / http://127.0.0.1:7000/
+</VirtualHost>
+
+```
+
+Perform a Hard Restart of Apache. Sometimes a simple reload or standard restart leaves active TLS sessions open. Force Apache to completely dump its cache:
+
+```bash
+systemctl stop apache2 && systemctl start apache2
+```
+
+---
+
+## 3. Local SSL Certificate Generation
+
+To prevent modern browsers and PHP from blocking the local HTTPS connection, the certificate must contain a **Subject Alternative Name (SAN)**.
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/vpl.mini.pc-selfsigned.key \
+  -out /etc/ssl/certs/vpl.mini.pc-selfsigned.crt \
+  -subj "/CN=vpl.mini.pc" \
+  -addext "subjectAltName = DNS:vpl.mini.pc,IP:127.0.0.1"
+
+```
+
+---
+
+## 4. Moodle Integration Summary
+
+To bind the components together inside the Moodle administration panel:
+
+1. Navigate to **Site administration** > **Plugins** > **Activity modules** > **Virtual Programming Lab**.
+2. Set the **Jail servers url list** explicitly to:
+
+```text
+https://vpl.mini.pc:443
+
+```
+
+3. **Troubleshooting Steps Cache Clear:** If changing settings, always purge the backend application state via **Site administration** > **Development** > **Purge caches** to force a new security handshake.
+4. **Browser Exception:** Since the certificate is self-signed, developers/users must initially visit `https://vpl.mini.pc/OK` in their browser and manually select **"Proceed/Accept Risk"** to authorize the secure WebSocket (`wss://`) traffic.
+
+## 5. Testing the Setup
+
+To verify that the VPL jail is correctly receiving requests from Moodle, you can use the following command to monitor the logs in real-time:
+
+```bash
+docker compose logs -f vpljail
+```
+
+This will allow you to see incoming requests and any potential errors that may arise during the execution of student code. If you see requests being logged, it indicates that the Apache reverse proxy is correctly forwarding traffic to the VPL jail container.
+
+Add a simple test program in the VPL Moodle plugin to confirm that code execution is working as expected. For example, you can create a C program that prints "Hello, World!" and submit it through the VPL interface. If the output is correctly displayed, it confirms that the entire setup is functioning properly.
+
+```c
+#include <stdio.h>
+
+int main() {
+    printf("Hello, World!\n");
+    return 0;
+}
+```
