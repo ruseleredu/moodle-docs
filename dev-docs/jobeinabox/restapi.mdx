@@ -1,0 +1,180 @@
+---
+id: jobe-rest-api
+title: Jobe REST API Reference
+sidebar_label: REST API
+sidebar_position: 1
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Jobe: REST API
+
+**Version 1.0** — 17 March 2015 <sup>[2]</sup>  
+**Author:** Richard Lobb <sup>[2]</sup>
+
+---
+
+## 1. Introduction
+
+This document proposes a RESTful API for sending small student-exercise-type jobs to a "Job Engine" server, called Jobe<sup>[4]</sup>.
+
+A job consists of a source program in a specified language together with possible additional files to be placed in the same directory as the source program<sup>[5]</sup>. Jobe compiles and/or executes the given job and returns the status of the job plus any output generated<sup>[6]</sup>.
+
+:::info[General Intent]
+This API is similar in general intent to that of the Ideone API (see https://ideone.com/files/ideone-api.pdf)<sup>[7]</sup>. The major difference is that it is REST-based rather than SOAP-based<sup>[8]</sup>. Also, it supports the uploading of additional support files, which may be either extra code, such as classes or modules, or may be run-time test data<sup>[9]</sup>.
+:::
+
+Jobe has been developed for use in the Moodle CodeRunner question-type plug-in (see https://github.com/trampgeek/CodeRunner)<sup>[10]</sup>. In this context, the Jobe server is expected to be a custom server behind the Moodle institutional firewall and Jobe will receive requests only from the Moodle server by means of firewalling of the server or other IP whitelisting mechanisms<sup>[11]</sup>.
+
+In more general contexts, authentication and/or authorization can be enforced by higher-level protocols that are not part of this API specification<sup>[12]</sup>. For example, the current implementation of Jobe uses Ellis Lab's CodeIgniter framework (see http://codeigniter.com) plus the REST-server extension written by Phil Sturgeon (see https://github.com/philsturgeon/codeigniter-restserver)<sup>[13]</sup>. The latter provides for Basic or Digest HTTP authentication, IP whitelisting, and an API-key mechanism that requires all HTTP requests to include an `X-API-KEY` header and a known authorisation key<sup>[14]</sup>. A Jobe administrator can enforce any combination of these mechanisms on top of the API described in this document<sup>[15]</sup>.
+
+---
+
+## 2. Requests
+
+The following table lists all the REST requests<sup>[17]</sup>. The meanings of the possible response codes are documented in section 3<sup>[17]</sup>.
+
+:::note[Content Type]
+All POST and PUT requests have a content type of `application/json`; the request body is a JSON-encoded object in which the fields are the parameters specified in the table<sup>[17, 18]</sup>.
+:::
+
+| Request Name       | HTTP Type | Target Resource   | Parameters (\* denotes required) | Possible Response Codes                                                    | Comment                                                                                                                                        |
+| :----------------- | :-------- | :---------------- | :------------------------------- | :------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| **submit_run**     | `POST`    | `/runs`           | `run_spec*`                      | `200 OK`<br />`202 Accepted`<br />`400 Bad Request`<br />`404 Not Found`   | A return code of 200 is accompanied by the run result; 202 denotes the job has been queued for later execution (notes 1, 2, 6)<sup>[19]</sup>. |
+| **get_run_status** | `GET`     | `/runresults/id`  | _None_                           | `200 OK`<br />`204 No Content`<br />`400 Bad Request`<br />`404 Not Found` | A return code of 200 is accompanied by the run result; 204 denotes the job is still pending (notes 2, 6)<sup>[19]</sup>.                       |
+| **get_languages**  | `GET`     | `languages`       | _None_                           | `200 OK`<br />`400 Bad Request`                                            | Returns a JSON-encoded list of supported languages (note 3)<sup>[19]</sup>.                                                                    |
+| **put_file**       | `PUT`     | `/files/uniqueid` | `file contents*`                 | `204 No Content`<br />`400 Bad Request`<br />`403 Forbidden`               | It is the client's responsibility to ensure a unique file ID (notes 4, 6, 7, 8)<sup>[19]</sup>.                                                |
+| **post_file**      | `POST`    | `/files`          | `file_contents*`                 | `200 OK`<br />`400 Bad Request`                                            | Add a file to the collection and get back a unique file identifier (notes 4, 6, 7)<sup>[22]</sup>.                                             |
+| **check_file**     | `HEAD`    | `/files/uniqueid` | _None_                           | `204 No Content`<br />`400 Bad Request`<br />`404 Not Found`               | Used by the client to see if the server (still) holds a particular file (notes 6, 8)<sup>[22]</sup>.                                           |
+
+### Notes
+
+#### 1. The mandatory `run_spec` parameter
+
+The mandatory `run_spec` parameter is a JSON-encoded job record with the following allowed fields (\* denotes a mandatory field/key)<sup>[24]</sup>:
+
+- **`language_id*`**: The computer language ID of this particular run (see note 3)<sup>[25]</sup>.
+- **`sourcecode*`**: The program to compile and/or run<sup>[25]</sup>.
+- **`sourcefilename`**: The name to assign to the source code file in the run directory Clyde<sup>[26]</sup>. If omitted, Jobe either uses a generic language-specific filename like `prog.cpp` or `prog.py`, or, where it matters (e.g., Java) a name is inferred from the source code<sup>[27]</sup>. The latter process is not completely reliable (it uses regular expression matching rather than a full parse) so for such languages an explicit `sourcefilename` is strongly recommended<sup>[28]</sup>.
+- **`input`**: The standard input data, if required<sup>[29]</sup>.
+- **`file_list`**: A list of `(file_id, file_name)` pairs, specifying which files should be loaded into the run-time directory<sup>[30]</sup>. The `file_id` is the unique file identifier as supplied in `put_file` and `file_name` is the name assigned to that file when it is loaded<sup>[31]</sup>.
+  :::tip[Extension Note]
+  As a possible extension, a triple of `(file_id, file_name, is_source)` might be permitted instead of a pair; the third parameter is true if the specified file is a program source file that should be included in the compile-and-build operation in a language-dependent manner<sup>[32, 33]</sup>.
+  :::
+  File identifiers are required to be purely alphanumeric and at least 8 characters in length<sup>[33]</sup>. Filenames must be made only from alphanumeric characters plus `-`, `_` and `.`<sup>[34]</sup>.
+- **`parameters`**: A server-dependent set of `(key, value)` pairs (i.e., a JSON record), which might include things like maximum execution time, maximum memory usage, compile flags<sup>[35]</sup>.
+- **`debug`**: If provided and true, the server is invited to include extra debugging information in the response or to retain extra information itself for later inspection<sup>[35]</sup>. Server-dependent<sup>[36]</sup>.
+
+#### 2. Run Execution Modes
+
+The API allows for either an immediate run of a submitted job, returning the run results in the response, or a deferred run in which the server simply accepts the job and enqueues it for later execution<sup>[37]</sup>. The server has discretion over which of these modes to use and the client must respect that choice, polling for a result if the run submission returns `202 Accepted` rather than `200 OK`<sup>[38]</sup>.
+
+The immediate mode is preferred for fast turn-around jobs on relatively lightly-loaded servers while the deferred mode would be required under high load<sup>[39]</sup>. The server may choose to use a mix of the two depending on load and/or expected maximum execution time<sup>[40]</sup>.
+
+#### 3. Language List
+
+The returned language list is a JSON-encoded list of `(language_id, language_version)` pairs of all supported languages<sup>[41]</sup>. The client must use one of the returned `language_ids` in all its run submissions<sup>[42]</sup>.
+
+The formats of the `language_id` and `language_version` are server-dependent: they are just strings<sup>[43]</sup>. However, they should preferably be human-readable, e.g., `('C99', 'gcc 4.8.1')`, to allow clients to present the language list to on-line users<sup>[43, 44]</sup>. The `language_id` must be unique; if multiple versions of a language are supported, each must have its own ID<sup>[44, 45]</sup>.
+
+#### 4. Shared-Server Context & `PUT` Requests
+
+The use of `PUT` to place a specific file on the server is not satisfactory in a shared-server context where the clients might not be trusted to provide a globally unique file ID<sup>[46, 47]</sup>.
+
+:::warning[Security Warning]
+If a server does not trust the sender it should return `403 Forbidden` and the client must then fall back to using `post_file` instead<sup>[48]</sup>.
+:::
+
+#### 5. Idempotency & Result Holding
+
+Ideally, if the `get_status` request is to be idempotent, the server should keep run results for some "reasonable" time<sup>[49]</sup>. However, the holding time from when the results are first returned to the client to when they are discarded from the server is at the discretion of the server, and may be zero<sup>[50]</sup>.
+
+#### 6. Server Caching of Support Files
+
+The file interface supports server caching of support files, which might be large test data files that one does not wish to upload multiple times<sup>[51]</sup>.
+
+The recommended approach is that used by the CodeRunner client: attempt a `submit_run` without uploading any files and if the response is `404 Not Found`, upload all the files using `put_file` and try the run again<sup>[52]</sup>. Alternatively, if it is unlikely that the files have been uploaded already, they can be uploaded before the run<sup>[53]</sup>.
+
+#### 7. File Contents Parameter
+
+The `file_contents` parameter to `put_file` and `post_file` requests is a string containing the file contents (which might be binary) encoded in standard base_64<sup>[54]</sup>. The server decodes the `file_contents` before writing it to the file cache<sup>[55]</sup>.
+
+:::danger[Validation Error]
+If the contents are not a valid base-64 encoding, `400 Bad Request` is returned<sup>[56]</sup>.
+:::
+
+#### 8. File Cache Persistence
+
+The file cache is, as the name implies, simply a cache rather than a permanent file store<sup>[57]</sup>. Persistence of a file beyond a few hours is not guaranteed<sup>[57, 58]</sup>.
+
+It is thus unsafe to use a `check_file` request to confirm the existence of a required file prior to the run that requires it<sup>[59]</sup>. The file might be deleted from the cache between the two calls<sup>[59, 60]</sup>. See note 6 for the recommended approach<sup>[60]</sup>.
+
+---
+
+## 3. Meanings of the Different Response Codes
+
+This section describes the meanings of the various possible HTTP response codes returned by the requests listed in section 2<sup>[61, 62]</sup>.
+
+:::note[Unlisted Method Code]
+`405 Method Not Allowed` is the only response code not explicitly listed in section 2, because it is the one issued when a request does not match any of the specified requests<sup>[62]</sup>.
+:::
+
+1. **200 OK**: Returned by a successful request that is accompanied by some response data<sup>[63]</sup>. Not all successful requests return `200 OK`, as follows:
+   - `submit_run` returns 200 together with the full run result as in section 4 below if the run can be done immediately, but returns `202 Accepted` together with a `run_id` if the run is queued for later execution<sup>[64]</sup>.
+   - `get_run_status` returns `200 OK` plus the run result if the job is complete but returns `204 No Content` if the job is still queued<sup>[65]</sup>.
+2. **202 Accepted**: Returned by the `submit_run` request if the server has enqueued the job for subsequent execution rather than running it immediately<sup>[67]</sup>. The response data is then a unique `run_id` for use in subsequent `get_run_status` requests<sup>[68]</sup>.
+3. **204 No Content**: Returned by the `get_run_status` request if the request relates to a pending job for which the result is not yet available<sup>[69]</sup>. It's also returned by `check_file` if the file exists and by a successful `put_file`<sup>[70]</sup>.
+4. **400 Bad Request**: Returned by any request that has syntactic or semantic errors in any of the parameters or is missing a required parameter<sup>[71]</sup>.
+5. **403 Forbidden**: Returned by `put_file` if the server does not trust the client to provide a unique file ID, in which case the client must use the `post_file` command instead, where the server provides file IDs<sup>[72]</sup>.
+6. **404 Not Found**: Returned by any request to a resource collection other than those listed, or by a request for a specific unknown resource, or by a `submit_run` request containing unknown file IDs<sup>[73]</sup>.
+7. **405 Method Not Allowed**: Returned by any request to a resource or resource collection that uses a method that is not defined for that RunResult resource (collection)<sup>[74]</sup>.
+8. **Other Return Codes**: Other return codes, such as `401 Unauthorized`, may also be returned if higher-level authentication and authorisation protocols are enabled, as briefly discussed in the introduction<sup>[75]</sup>.
+
+---
+
+## 4. The RunResult Object
+
+The data returned with a `200 OK` response to either a `submit_run` or `get_run_status` request is a JSON-encoded record with four fields, as follows<sup>[77, 79]</sup>:
+
+1. **`run_id`**: The unique ID of this particular run (which may or may not be usable in a subsequent `get_job_status` request; see section 2, note 5)<sup>[80]</sup>.
+2. **`outcome`**: The outcome code of the job, mapping to the values below<sup>[81]</sup>.
+
+<Tabs defaultValue="all" values={[
+  {label: 'All Outcomes', value: 'all'},
+  {label: 'Errors Only', value: 'errors'},
+]}>
+<TabItem value="all">
+
+| Value  | Meaning                                                                                                                                                                                                                                           |
+| :----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **11** | Compilation error. The `cmpinfo` field should offer further explanation<sup>[82]</sup>.                                                                                                                                                           |
+| **12** | Runtime error. The job compiled but threw an exception at run time that isn't covered by any of the more-specific errors below<sup>[82]</sup>.                                                                                                    |
+| **13** | Time limit exceeded. The job was killed before it ran to completion as a result of the server-specified time limit (or a possible time limit specified via the `parameters` field of the job request) being reached<sup>[82]</sup>.               |
+| **15** | OK. The run ran to completion without any exceptions<sup>[82]</sup>.                                                                                                                                                                              |
+| **17** | Memory limit exceeded. The job was killed before it ran to completion as a result of the server-specified maximum memory limit (or a possible memory limit specified via the `parameters` field of the job request) being reached<sup>[82]</sup>. |
+| **19** | Illegal system call. The task attempted a system call not allowed by this particular server<sup>[82]</sup>.                                                                                                                                       |
+| **20** | Internal error. Something went wrong in the server. Please report this to an administrator<sup>[82]</sup>.                                                                                                                                        |
+| **21** | Server overload. No free Jobe user accounts. Probably something has gone wrong<sup>[82]</sup>.                                                                                                                                                    |
+
+</TabItem>
+<TabItem value="errors">
+
+| Value  | Meaning                               |
+| :----: | :------------------------------------ |
+| **11** | Compilation error<sup>[82]</sup>.     |
+| **12** | Runtime error<sup>[82]</sup>.         |
+| **13** | Time limit exceeded<sup>[82]</sup>.   |
+| **17** | Memory limit exceeded<sup>[82]</sup>. |
+| **19** | Illegal system call<sup>[82]</sup>.   |
+| **20** | Internal error<sup>[82]</sup>.        |
+| **21** | Server overload<sup>[82]</sup>.       |
+
+</TabItem>
+</Tabs>
+
+The precise situations under which these outcome values are returned will be server-dependent<sup>[83]</sup>. For example, a server might limit the memory by denying memory allocation requests without terminating the job: the job would then possibly generate its own error message and exit without throwing an exception<sup>[84]</sup>. Similarly, a server might not recognise an illegal system call as such but just lock the job in a chroot jail so that potentially dangerous system calls are unable to do any damage<sup>[85]</sup>.
+
+3. **`cmpinfo`**: Any output generated by the compiler (if there is one) at compile time<sup>[86]</sup>.
+4. **`stdout`**: The standard output from the program run<sup>[87]</sup>.
+5. **`stderr`**: The standard error output from the program run<sup>[88]</sup>.
