@@ -12,3 +12,10 @@ The dockerfile and doc for building the Docker image JobeInABox
 
 - https://github.com/trampgeek/jobeinabox
 - https://github.com/trampgeek/jobe
+
+Moodle configuration
+
+```php
+# https://vpl.dis.ulpgc.es/index.php/en/
+$defaults['mod_vpl']['jail_servers'] = 'http://host.docker.internal:7000';
+```

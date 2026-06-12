@@ -142,7 +142,12 @@ To bind the components together inside the Moodle administration panel:
 
 ```text
 https://vpl.mini.pc:443
+```
 
+```php
+# https://coderunner.org.nz/
+# https://github.com/trampgeek/jobeinabox
+$defaults['qtype_coderunner']['jobe_host'] = 'host.docker.internal:4000';
 ```
 
 3. **Troubleshooting Steps Cache Clear:** If changing settings, always purge the backend application state via **Site administration** > **Development** > **Purge caches** to force a new security handshake.

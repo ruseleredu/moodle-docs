@@ -73,3 +73,12 @@ services:
     volumes:
       - ./data:/app/data # mount a volume if the container needs local storage
 ```
+
+Moodle configuration
+
+```php
+# https://docs.stack-assessment.org/en/Installation/
+$defaults['qtype_stack']['platform'] = 'Server'; // TODO
+$defaults['qtype_stack']['maximaversion'] = '5.44.0';
+$defaults['qtype_stack']['maximacommandserver'] = 'http://host.docker.internal:8081/goemaxima';
+```
