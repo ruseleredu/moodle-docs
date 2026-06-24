@@ -134,11 +134,47 @@ environment:
   AUTO_UPDATE_MOODLE: "false"
 ```
 
-Manual upgrade:
+### Manual upgrade:
+
+- https://docs.docker.com/reference/cli/docker/compose/exec/
+
+```bash
+docker compose exec [OPTIONS] SERVICE COMMAND [ARGS...]
+```
+
+Find docker running instances:
+
+```bash
+docker compose ls
+```
+
+Change directory to `docker-compose.yml` location and pull:
+
+```bash
+docker compose pull
+```
+
+```bash
+docker compose up -d
+```
+
+```bash
+docker compose exec moodle cat public/version.php
+```
 
 ```bash
 docker compose exec moodle php admin/cli/maintenance.php --enable
+```
+
+```bash
 docker compose exec moodle php admin/cli/upgrade.php --non-interactive
+```
+
+```bash
+docker compose exec moodle php admin/cli/maintenance.php --disable
+```
+
+```bash
 docker compose exec moodle php admin/cli/maintenance.php --disable
 ```
 

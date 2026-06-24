@@ -196,28 +196,6 @@ volumes:
 Moodle expects `utf8mb4`, a large row format and `innodb_file_per_table`. The command overrides above cover the most common requirements.
 :::
 
-## SQLite single-container mode
-
-```yaml
-services:
-  moodle:
-    image: ruseler/alpine-moodle
-    restart: unless-stopped
-    environment:
-      MOODLE_DATABASE_TYPE: sqlite3
-      MOODLE_USERNAME: admin
-      MOODLE_PASSWORD: ChangeMe123!
-    ports:
-      - "8080:8080"
-    volumes:
-      - moodledata:/var/www/moodledata
-
-volumes:
-  moodledata:
-```
-
-See the [SQLite Mode](sqlite.mdx) page for the full story.
-
 ## Pinning a Moodle version
 
 You can run any Moodle tag available in the upstream repository:
@@ -225,7 +203,7 @@ You can run any Moodle tag available in the upstream repository:
 ```yaml
 services:
   moodle:
-    image: ruseler/alpine-moodle:v5.0
+    image: ruseler/alpine-moodle:5.2
 ```
 
 Or build the image yourself for a specific Moodle version:
@@ -236,10 +214,11 @@ services:
     build:
       context: .
       args:
-        MOODLE_VERSION: v5.0
+        MOODLE_BRANCH: MOODLE_502_STABLE
+        MOODLE_PGLS: AdrianoRuseler/moodle502-plugins
 ```
 
-Available tags: https://github.com/moodle/moodle/tags
+Available branches: https://github.com/moodle/moodle/branches
 
 ---
 

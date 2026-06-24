@@ -48,8 +48,16 @@ const navbarItems: NavbarItem[] = [
         activeBaseRegex: `/dev/`, // Highlight when any Dev doc is active
         items: [
             {
-                to: "/dev/category/alpine-php-webserver", // Link to a page in your PJTS docs
+                to: "/dev/category/alpine-php-webserver", // Link to a page in your Dev docs
                 label: "Alpine PHP Webserver",
+            },
+            {
+                to: "/dev/category/alpine-moodle", // Link to a page in your Dev docs
+                label: "Alpine Moodle",
+            },
+            {
+                to: "/dev/category/jobeinabox", // Link to a page in your Dev docs
+                label: "JobeInABox",
             },
         ],
     },
