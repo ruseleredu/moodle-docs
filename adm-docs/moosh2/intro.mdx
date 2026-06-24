@@ -1,0 +1,116 @@
+---
+title: Introduction
+description: Introduction to Moosh v2.x.
+---
+
+# Moosh 2
+
+:::info
+Moodle Shell — manage you Moodle like a hacker - from command-line!
+:::
+
+Moosh stands for MOOdle SHell. It is a commandline tool that will allow you to perform most common Moodle tasks. It's inspired by Drush - a similar tool for Drupal.
+
+:::note
+This is moosh 2 - a rewrite for Moodle 5.2 and above.
+:::
+
+## What is it for?
+
+moosh is meant to be run:
+
+- As a CLI command to support Moodle development, troubleshooting or administration
+- In bash-oneliners for quick task automation
+- As part of shell scripts to automate Moodle processes
+
+There is no moosh API that could be used programmatically.
+
+## Documentation
+
+- https://moosh-online.com/moosh2/
+- https://github.com/tmuras/moosh/tree/2.x
+
+## Getting Started
+
+Install moosh2 and run your first command.
+
+### Requirements
+
+- PHP 8.3 or higher
+- Composer
+- A working Moodle installation (5.2+)
+
+### Installation from github
+
+```bash
+git clone -b 2.x https://github.com/tmuras/moosh.git moosh2
+cd moosh2
+composer install
+```
+
+### Using composer
+
+```bash
+composer require tmuras/moosh:2.x@dev
+```
+
+### Basic Usage
+
+moosh2 can be run using either entry point:
+
+```bash
+php moosh.php <command> [options] [arguments]
+# or
+php bin/moosh <command> [options] [arguments]
+```
+
+### Moodle Path Detection
+
+moosh2 automatically detects the Moodle installation by walking up the directory tree from the current working directory. It looks for config.php, version.php, and lib/moodlelib.php to identify the Moodle root.
+
+Alternatively, specify the path explicitly:
+
+```bash
+php moosh.php course:list --moodle-path=/var/www/moodle
+```
+
+### Quick Start
+
+```bash
+# Run a command
+php moosh.php course:list --moodle-path=/path/to/moodle
+
+# Output as JSON
+php moosh.php course:list -o json
+
+# Get help for any command
+php moosh.php help course:list
+```
+
+### Your First Commands
+
+```bash
+# List all courses
+php moosh.php course:list
+
+# List courses as JSON
+php moosh.php course:list -o json
+
+# Get site information
+php moosh.php site:info
+
+# List installed plugins
+php moosh.php plugin:list
+
+# List users
+php moosh.php user:list
+```
+
+### Getting Help
+
+Use the help command or --help flag to get detailed information about any command:
+
+```bash
+php moosh.php help course:list
+php moosh.php course:list --help
+```
