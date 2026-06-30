@@ -38,6 +38,9 @@ function HomepageHeader() {
             QA
           </Link>
         </div>
+        <div className={styles.releasesWrapper} data-theme="light">
+          <MoodleReleasesFiltered filterStatus={["!experimental", "!eol"]} />
+        </div>
       </div>
     </header>
   );
@@ -53,10 +56,6 @@ export default function Home(): ReactNode {
       <HomepageHeader />
       <main>
         <HomepageFeatures />
-
-        <div className="container">
-          <MoodleReleasesFiltered filterStatus={["!experimental", "!eol"]} />
-        </div>
       </main>
     </Layout>
   );
