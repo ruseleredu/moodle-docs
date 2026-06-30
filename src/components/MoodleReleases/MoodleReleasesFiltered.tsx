@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import type { JSX } from "react";
 import styles from "./MoodleReleases.module.css";
 import {
   DATA_URL,
@@ -33,6 +34,9 @@ import {
  *
  * // Security-only branches sorted by security end date
  * <MoodleReleasesFiltered filterStatus="security" sortCol="securityEndDate" />
+ *
+ * // Hide the "Data sourced from" footer
+ * <MoodleReleasesFiltered filterStatus="lts" showFooter={false} />
  * ```
  */
 export interface MoodleReleasesFilteredProps extends FilterOptions {
@@ -41,6 +45,11 @@ export interface MoodleReleasesFilteredProps extends FilterOptions {
    * Defaults to false (column shown).
    */
   hidePatchReleases?: boolean;
+  /**
+   * Show the "Data sourced from moodle/devdocs" footer link.
+   * Defaults to true (footer shown).
+   */
+  showFooter?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -138,6 +147,7 @@ export default function MoodleReleasesFiltered({
   sortCol = "name",
   sortDir = -1,
   hidePatchReleases = false,
+  showFooter = true,
 }: MoodleReleasesFilteredProps): JSX.Element {
   const [data, setData] = useState<Version[]>([]);
   const [loading, setLoading] = useState(true);
@@ -283,6 +293,15 @@ export default function MoodleReleasesFiltered({
           })}
         </tbody>
       </table>
+
+      {showFooter && (
+        <p className={styles.footer}>
+          Data sourced from{" "}
+          <a href={DATA_URL} target="_blank" rel="noopener noreferrer">
+            moodle/devdocs · data/versions.json
+          </a>
+        </p>
+      )}
     </div>
   );
 }

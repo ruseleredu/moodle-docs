@@ -1,4 +1,10 @@
+---
+title: Moodle Releases — Usage Examples
+description: Documentation on all aspects of Moodle site administration.
+---
+
 import MoodleReleasesFiltered from "@site/src/components/MoodleReleases/MoodleReleasesFiltered";
+import MoodleReleases from "@site/src/components/MoodleReleases/MoodleReleases";
 
 # Moodle Releases — Usage Examples
 
@@ -186,3 +192,23 @@ column:
 | `!<token>`     | Negates any of the above, e.g. `!eol`, `!lts`        |
 
 Arrays combine tokens with AND: `["lts", "active"]` means "LTS AND active".
+
+## Footer
+
+- Default — footer shown
+
+  <MoodleReleasesFiltered filterStatus={["!experimental", "!eol"]} />
+
+- Hidden
+  <MoodleReleasesFiltered
+    filterStatus={["!experimental", "!eol"]}
+    showFooter={false}
+  />
+
+## All releases
+
+```md
+<MoodleReleases />
+```
+
+<MoodleReleases />
