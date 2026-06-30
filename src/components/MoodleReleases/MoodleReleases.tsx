@@ -170,8 +170,18 @@ export default function MoodleReleases(): JSX.Element {
     return { total: data.length, supported: active + security, lts, totalReleases };
   }, [data]);
 
+  // filterStatus is stored as a single comma-separated string in state
+  // (so it works as one <select> value), then split into tokens here.
+  // e.g. "lts,active" -> ["lts", "active"] (AND-combined by applyFilters).
   const rows = useMemo(
-    () => applyFilters(data, { search, filterStatus, filterSeries, sortCol, sortDir }),
+    () =>
+      applyFilters(data, {
+        search,
+        filterStatus: filterStatus ? filterStatus.split(",") : "",
+        filterSeries,
+        sortCol,
+        sortDir,
+      }),
     [data, search, filterStatus, filterSeries, sortCol, sortDir],
   );
 
@@ -223,10 +233,14 @@ export default function MoodleReleases(): JSX.Element {
           <option value="">All statuses</option>
           <option value="active">Active support</option>
           <option value="security">Security only</option>
-          <option value="lts">LTS</option>
+          <option value="!eol">Not end of life</option>
           <option value="eol">End of life</option>
           <option value="future">Upcoming</option>
           <option value="experimental">Experimental</option>
+          <option value="lts">LTS (any stage)</option>
+          <option value="lts,active">LTS · Active only</option>
+          <option value="lts,security">LTS · Security only</option>
+          <option value="lts,!eol">LTS · Not end of life</option>
         </select>
         <select
           className={styles.select}
