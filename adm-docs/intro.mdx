@@ -4,7 +4,7 @@ sidebar_position: 1
 description: Documentation on all aspects of Moodle site administration.
 ---
 
-import MoodleReleases from "@site/src/components/MoodleReleases/MoodleReleases";
+import MoodleReleasesFiltered from "@site/src/components/MoodleReleases/MoodleReleasesFiltered";
 
 ## Administrator pathway
 
@@ -24,4 +24,4 @@ This action is dangerous
 
 ## Moodle releases
 
-<MoodleReleases />
+<MoodleReleasesFiltered filterStatus={["!experimental", "!eol"]} />
