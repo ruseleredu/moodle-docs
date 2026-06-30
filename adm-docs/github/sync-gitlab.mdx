@@ -1,0 +1,133 @@
+---
+title: Backup Mirror
+description: Reference guide for backing up a GitLab repository's master branch to a GitHub repository.
+---
+
+# Syncing GitLab `master` to GitHub Upstream
+
+This guide covers setting up a one-way backup mirror: pulling `master` from a GitLab repo (`origin`) and pushing it to a GitHub repo you own (`upstream`). Useful when your GitLab instance has occasional downtime and you want a redundant copy.
+
+## Prerequisites
+
+- An empty GitHub repository created in advance (do **not** initialize it with a README, license, or `.gitignore` — it should be completely empty).
+- SSH keys configured for both GitLab and GitHub, or HTTPS personal access tokens.
+- A local clone of the GitLab repo, ideally **not** shallow (see [Avoiding Shallow Clone Issues](#avoiding-shallow-clone-issues) below).
+
+## 1. Check Existing Remotes
+
+```bash
+git remote -v
+```
+
+## 2. Add Remotes
+
+If `origin` (GitLab) isn't configured:
+
+```bash
+git remote add origin git@gitlab.example.com:group/project.git
+```
+
+If `upstream` (GitHub backup) isn't configured:
+
+```bash
+git remote add upstream git@github.com:yourname/yourrepo-backup.git
+```
+
+To fix an existing remote pointing to the wrong URL, use `set-url` instead of `add`:
+
+```bash
+git remote set-url origin git@gitlab.example.com:group/project.git
+git remote set-url upstream git@github.com:yourname/yourrepo-backup.git
+```
+
+## 3. Pull the Latest `master` from GitLab
+
+```bash
+git checkout master
+git pull origin master
+```
+
+## 4. Push `master` to GitHub
+
+```bash
+git push upstream master
+```
+
+First time pushing this branch and want it tracked:
+
+```bash
+git push -u upstream master
+```
+
+## 5. Keep It Updated
+
+Repeat steps 3–4 periodically, or wrap them in a script / cron job:
+
+```bash
+git pull origin master
+git push upstream master
+```
+
+## Full Mirror (All Branches + Tags)
+
+For a complete mirror rather than just `master`:
+
+```bash
+git push upstream --all
+git push upstream --tags
+```
+
+Or a one-shot full mirror clone into a separate folder:
+
+```bash
+git clone --mirror git@gitlab.example.com:group/project.git
+cd project.git
+git push git@github.com:yourname/yourrepo-backup.git --mirror
+```
+
+## Avoiding Shallow Clone Issues
+
+A shallow clone (e.g. `git clone --depth 1`) only has partial history. Pushing a shallow clone to a fresh remote can fail with errors like:
+
+```
+remote: fatal: did not receive expected object <sha>
+error: remote unpack failed: index-pack failed
+```
+
+**Check if your clone is shallow:**
+
+```bash
+git rev-parse --is-shallow-repository
+```
+
+**Fix it** (requires `origin` to be reachable):
+
+```bash
+git fetch --unshallow origin
+git push upstream master
+```
+
+**If `origin` is unreachable** (e.g. GitLab is down) and you need an emergency snapshot right now, push an orphan commit instead — this sacrifices history but backs up your current files immediately:
+
+```bash
+git checkout --orphan backup-temp
+git add -A
+git commit -m "Backup snapshot (shallow clone, full history pending)"
+git push upstream backup-temp:master --force
+```
+
+Once `origin` is reachable again, redo the proper unshallow fetch and push to restore full history on GitHub.
+
+## Troubleshooting Checklist
+
+| Symptom                                            | Likely Cause                         | Fix                                                                                      |
+| -------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `remote unpack failed: index-pack failed`          | Shallow clone missing history        | `git fetch --unshallow origin`                                                           |
+| `Failed to connect to <gitlab-host>`               | GitLab instance down/unreachable     | Wait and retry, or use orphan-commit snapshot                                            |
+| `! [rejected] master -> master (non-fast-forward)` | GitHub `master` has diverged commits | `git fetch upstream && git merge upstream/master`, or `--force` if intentional overwrite |
+| Push works but objects seem missing                | Local repo corruption                | `git fsck --full`, re-clone from `origin` if errors found                                |
+
+## Notes
+
+- `--force` rewrites remote history — only use it when you're certain no one else depends on the existing GitHub history.
+- If you don't have push access to the _original_ upstream GitHub project (collaboration scenario, not backup), use a fork + pull request workflow instead of direct pushes.
