@@ -1,0 +1,188 @@
+import MoodleReleasesFiltered from "@site/src/components/MoodleReleases/MoodleReleasesFiltered";
+
+# Moodle Releases — Usage Examples
+
+`MoodleReleasesFiltered` renders a static (non-interactive) table of Moodle
+version data, filtered and sorted via props. All props are optional —
+omitting a prop means "no filter" / default sort.
+
+## Basic usage
+
+Show everything, default sort (newest version first):
+
+```mdx
+<MoodleReleasesFiltered />
+```
+
+<MoodleReleasesFiltered />
+
+---
+
+## Filtering by status
+
+`filterStatus` accepts a single token, or an array of tokens combined with
+**AND**. Valid tokens: `"active"`, `"security"`, `"lts"`, `"eol"`,
+`"future"`, `"experimental"`. Prefix any token with `!` to negate it.
+
+### Only currently-supported LTS branches
+
+```mdx
+<MoodleReleasesFiltered filterStatus={["lts", "security"]} />
+```
+
+<MoodleReleasesFiltered filterStatus={["lts", "security"]} />
+
+### Upcoming releases only
+
+```mdx
+<MoodleReleasesFiltered filterStatus="future" />
+```
+
+<MoodleReleasesFiltered filterStatus="future" />
+
+### Security-only branches, sorted by security end date
+
+```mdx
+<MoodleReleasesFiltered filterStatus="security" sortCol="securityEndDate" />
+```
+
+<MoodleReleasesFiltered filterStatus="security" sortCol="securityEndDate" />
+
+### All LTS branches, including past ones
+
+```mdx
+<MoodleReleasesFiltered filterStatus="lts" />
+```
+
+<MoodleReleasesFiltered filterStatus="lts" />
+
+### LTS branches that are NOT end-of-life
+
+Combine an array with a negated token:
+
+```mdx
+<MoodleReleasesFiltered filterStatus={["lts", "!eol"]} />
+```
+
+<MoodleReleasesFiltered filterStatus={["lts", "!eol"]} />
+
+### Everything except end-of-life branches
+
+```mdx
+<MoodleReleasesFiltered filterStatus="!eol" />
+```
+
+<MoodleReleasesFiltered filterStatus="!eol" />
+
+### LTS branches currently in security-only maintenance
+
+```mdx
+<MoodleReleasesFiltered filterStatus={["lts", "security"]} />
+```
+
+<MoodleReleasesFiltered filterStatus={["lts", "security"]} />
+
+---
+
+## Filtering by series
+
+`filterSeries` matches the major version prefix (e.g. `"4"` matches `4.0`,
+`4.1`, `4.5`, etc. — not `14.x`, since the match is on `"4."`).
+
+### All 4.x branches, oldest first
+
+```mdx
+<MoodleReleasesFiltered filterSeries="4" sortCol="releaseDate" sortDir={1} />
+```
+
+<MoodleReleasesFiltered filterSeries="4" sortCol="releaseDate" sortDir={1} />
+
+### 5.x LTS branches only
+
+```mdx
+<MoodleReleasesFiltered filterSeries="5" filterStatus="lts" />
+```
+
+<MoodleReleasesFiltered filterSeries="5" filterStatus="lts" />
+
+---
+
+## Text search
+
+`search` does a plain substring match against the version name.
+
+```mdx
+<MoodleReleasesFiltered search="4.1" />
+```
+
+<MoodleReleasesFiltered search="4.1" />
+
+---
+
+## Sorting
+
+`sortCol` accepts `"name"`, `"status"`, `"releaseDate"`, `"generalEndDate"`,
+`"securityEndDate"`, or `"count"` (number of patch releases). `sortDir` is
+`-1` (descending, default) or `1` (ascending).
+
+### Branches with the most patch releases first
+
+```mdx
+<MoodleReleasesFiltered sortCol="count" sortDir={-1} />
+```
+
+<MoodleReleasesFiltered sortCol="count" sortDir={-1} />
+
+---
+
+## Hiding the patch releases column
+
+Pass `hidePatchReleases` to drop that column entirely — useful for a more
+compact summary table.
+
+```mdx
+<MoodleReleasesFiltered filterStatus="active" hidePatchReleases />
+```
+
+<MoodleReleasesFiltered filterStatus="active" hidePatchReleases />
+
+---
+
+## Combining everything
+
+Active or security-only 4.x branches, oldest first, no patch releases
+column:
+
+```mdx
+<MoodleReleasesFiltered
+  filterSeries="5"
+  filterStatus={["active"]}
+  sortCol="releaseDate"
+  sortDir={1}
+  hidePatchReleases
+/>
+```
+
+<MoodleReleasesFiltered
+  filterSeries="5"
+  filterStatus={["active"]}
+  sortCol="releaseDate"
+  sortDir={1}
+  hidePatchReleases
+/>
+
+---
+
+## Reference: filterStatus tokens
+
+| Token          | Matches                                              |
+| -------------- | ---------------------------------------------------- |
+| `active`       | Currently in general support                         |
+| `security`     | Past general support, still receiving security fixes |
+| `eol`          | No longer supported                                  |
+| `future`       | Not yet released                                     |
+| `experimental` | Marked experimental, regardless of dates             |
+| `lts`          | `isLTS === true`, regardless of lifecycle stage      |
+| `!<token>`     | Negates any of the above, e.g. `!eol`, `!lts`        |
+
+Arrays combine tokens with AND: `["lts", "active"]` means "LTS AND active".

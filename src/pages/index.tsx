@@ -7,7 +7,7 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
-import MoodleReleases from "@site/src/components/MoodleReleases/MoodleReleases";
+import MoodleReleasesFiltered from "@site/src/components/MoodleReleases/MoodleReleasesFiltered";
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -55,7 +55,7 @@ export default function Home(): ReactNode {
         <HomepageFeatures />
 
         <div className="container">
-          <MoodleReleases />
+          <MoodleReleasesFiltered filterStatus={["!experimental", "!eol"]} />
         </div>
       </main>
     </Layout>

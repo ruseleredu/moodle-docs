@@ -100,13 +100,37 @@ export function semverCmp(a: string, b: string): number {
 export interface FilterOptions {
   /** Plain-text search against version name */
   search?: string;
-  /** "active" | "security" | "lts" | "eol" | "future" | "experimental" | "" */
-  filterStatus?: string;
+  /**
+   * One or more status/LTS tokens to filter by.
+   *
+   * Each token is one of:
+   * "active" | "security" | "lts" | "eol" | "future" | "experimental"
+   *
+   * Pass a single string for one condition, or an array of tokens to
+   * require ALL of them (AND semantics) — e.g. `["lts", "active"]` matches
+   * only LTS branches that are currently active, `["lts", "security"]`
+   * matches LTS branches that are currently security-only, etc.
+   */
+  filterStatus?: string | string[];
   /** Major series number as a string, e.g. "4" or "5" */
   filterSeries?: string;
   sortCol?: SortCol;
   /** -1 = descending (default), 1 = ascending */
   sortDir?: 1 | -1;
+}
+
+/**
+ * Does a single version match a single status/lts token?
+ * "lts" is special-cased against `isLTS`; everything else is compared
+ * against the computed lifecycle `Status`.
+ */
+function matchesStatusToken(v: Version, token: string): boolean {
+  if (!token) return true;
+  if (token.startsWith("!")) {
+    return !matchesStatusToken(v, token.slice(1));
+  }
+  if (token === "lts") return v.isLTS === true;
+  return getStatus(v) === token;
 }
 
 export function applyFilters(
@@ -121,12 +145,20 @@ export function applyFilters(
     sortDir = -1,
   } = opts;
 
+  // Normalize filterStatus to a list of non-empty tokens. An empty list
+  // (no filterStatus passed, or an empty array) means "no status filter".
+  const statusTokens = Array.isArray(filterStatus)
+    ? filterStatus.filter(Boolean)
+    : filterStatus
+      ? [filterStatus]
+      : [];
+
   const filtered = versions.filter((v) => {
     if (search && !v.name.includes(search)) return false;
     if (filterSeries && !v.name.startsWith(filterSeries + ".")) return false;
-    if (filterStatus) {
-      if (filterStatus === "lts") return v.isLTS === true;
-      return getStatus(v) === filterStatus;
+    if (statusTokens.length > 0) {
+      // AND semantics: a version must satisfy every token provided.
+      return statusTokens.every((token) => matchesStatusToken(v, token));
     }
     return true;
   });

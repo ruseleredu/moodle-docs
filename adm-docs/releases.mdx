@@ -8,6 +8,39 @@ import MoodleReleasesFiltered from "@site/src/components/MoodleReleases/MoodleRe
 
 ## Filtered releases
 
+### Test
+
+- Active LTS branches only
+
+<MoodleReleasesFiltered filterStatus={["lts", "future"]} />
+
+- LTS branches in security-only maintenance
+
+<MoodleReleasesFiltered filterStatus={["lts", "security"]} />
+
+- Still works as before
+
+<MoodleReleasesFiltered filterStatus="active" />
+
+- All LTS branches except EOL ones
+
+  <MoodleReleasesFiltered filterStatus={["lts", "!eol"]} />
+
+- Everything except EOL
+
+  <MoodleReleasesFiltered filterStatus="!eol" />
+
+- Everything except EOL and experimental
+  <MoodleReleasesFiltered filterStatus={["!experimental", "!eol"]} />
+
+### Only active branches
+
+```md
+<MoodleReleasesFiltered filterStatus="active" />
+```
+
+<MoodleReleasesFiltered filterStatus="active" />
+
 {/* Only LTS branches */}
 
 ### Only LTS branches
@@ -17,6 +50,17 @@ import MoodleReleasesFiltered from "@site/src/components/MoodleReleases/MoodleRe
 ```
 
 <MoodleReleasesFiltered filterStatus="lts" />
+
+### All 5.x branches
+
+```md
+<MoodleReleasesFiltered
+  filterSeries="5"
+  sortCol="releaseDate"
+/>
+```
+
+<MoodleReleasesFiltered filterSeries="5" sortCol="releaseDate" />
 
 {/* All 4.x branches, oldest first, no patch releases column */}
 
