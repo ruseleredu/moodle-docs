@@ -30,17 +30,14 @@ This documentation is a fork of [`erseco/alpine-php-webserver`](https://github.c
 
 This image is the **base for [`ruseler/alpine-moodle`](https://github.com/AdrianoRuseler/alpine-moodle)** and powers numerous Symfony, Laravel, WordPress and plain PHP deployments.
 
-## Highlights
+## Features
 
-- Alpine Linux **3.23**, Nginx **1.28**, PHP **8.4** FPM (see the Dockerfile for the actual versions in each tag)
-- Multi-arch: `amd64`, `arm64`, `arm/v7`, `arm/v6`, `386`, `ppc64le`, `s390x`
-- `ondemand` FPM process manager — ~zero idle CPU
-- Unix-socket FastCGI for Nginx ↔ PHP (`/run/php-fpm.sock`)
-- Healthcheck on `/fpm-ping` (localhost-only by design)
-- Logs on `stdout` / `stderr` — just `docker logs -f`
-- Trusted-proxy real IP support (`REAL_IP_FROM`, Cloudflare, Tunnel)
-- `DISABLE_DEFAULT_LOCATION` to fully own the routing layer
-- Follows the **KISS** principle — the runtime is a few small shell scripts you can read in minutes
+- **Lightweight**: built on Alpine Linux for a compact final image
+- **Nginx + PHP-FPM**: runs both via `runit`, avoiding the overhead of `supervisord`
+- **Non-root by default**: Nginx and PHP-FPM run as `nobody` for improved security
+- **Environment-variable driven**: tune PHP limits, OPcache, timeouts, and reverse-proxy/trusted-IP settings without touching config files
+- **Healthcheck included**: built-in `HEALTHCHECK` hitting the FPM ping endpoint
+- **Composer-friendly**: designed to be extended with Composer-based builds for your own PHP projects
 
 ## Where to start
 
