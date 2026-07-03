@@ -1,0 +1,228 @@
+---
+id: docker
+title: 🐳 Docker
+description: The dockerfile and doc for building the Docker image JobeInABox
+sidebar_position: 1
+---
+
+# 🐳 JobeInABox
+
+![Docker Stars](https://img.shields.io/docker/stars/ruseler/jobeinabox.svg)
+![Docker Pulls](https://img.shields.io/docker/pulls/ruseler/jobeinabox.svg)
+
+The [Moodle CodeRunner question type plugin](https://moodle.org/plugins/qtype_coderunner) requires a [Jobe server](https://github.com/trampgeek) on which to run student-submitted jobs. [JobeInABox](hub.docker.com/r/ruseler/jobeinabox) is a Docker image that provides a basic Jobe server that runs all the standard languages. For full information on Jobe servers, see the [full Jobe documentation](https://github.com/trampgeek/jobe)
+
+:::info[Security]
+For security and performance reasons it is strongly recommended to run Jobe on a
+dedicated standalone server, even when running it in a container.
+:::
+
+## CodeRunner
+
+A question type that allows question authors to set programming questions in which the student answer is code in some programming language, which is graded by running it. More generally it can handle any question to which the answer is text that can be graded by a computer program written by the question author.
+
+- https://trampgeek.github.io/moodle-qtype_coderunner/
+- https://coderunner.org.nz/
+- https://moodle.org/plugins/stats.php?plugin=qtype_coderunner
+
+## Building and running your own image locally (strongly recommended)
+
+For production use you should build your own image using the local timezone. In this example we use Docker as follows:
+
+Pull [this repo from Github](https://github.com/AdrianoRuseler/jobeinabox), cd into the jobeinabox directory and type a command
+of the form
+
+```bash
+docker build -t ruseler/jobeinabox .
+```
+
+- jobebian
+
+```bash
+docker build -t ruseler/jobeinabox:latest .
+```
+
+```bash
+docker build -t ruseler/jobeinabox:debian-slim .
+```
+
+- jobuntu
+
+```bash
+docker build -t ruseler/jobeinabox:ubuntu .
+```
+
+You can then run your newly-built image with the command
+
+```bash
+sudo docker run -d -p 4000:80 --name jobe ruseler/jobeinabox:latest
+```
+
+This will give you a jobe server running on port 4000, which can then be
+tested locally and used by Moodle as explained in the section "Using jobeinabox" below.
+
+## Using the pre-built jobeinabox image on docker hub
+
+To run the pre-built Docker Hub image, just enter the command:
+
+```bash
+sudo docker run -d -p 4000:80 --name jobe ruseler/jobeinabox:latest
+```
+
+This will give you a jobe server running on port 4000, which can then be
+tested locally and used by Moodle as explained in the section "Using jobeinabox" below.
+
+## Setting the number of jobe users
+
+By default, Jobe will run up to 8 jobs simultaneously. This is usually a suitable
+value for 8-core systems but if you have more cores available you will probably
+want to raise this number. To do so, exec a shell in the container with a command of the form
+
+```bash
+docker exec -it jobeinabox bash
+```
+
+and then:
+
+```bash
+nano  /var/www/html/jobe/app/Config/Jobe.php
+```
+
+Find the line
+
+```php
+public int $jobe_max_users = 8;
+```
+
+and change the value from 8 to the number of cores on your machine, or to a higher
+value if you expect to run mainly I/O-bound jobs.
+
+Then re-install Jobe (within the container) with the commands:
+
+```bash
+cd /var/www/html/jobe
+./install --purge
+```
+
+## Checking performance
+
+You can check the performance of the container with the command
+
+```bash
+docker exec -it jobeinabox python3 /var/www/html/jobe/testsubmit.py --perf
+```
+
+## Using API Keys
+
+You can provide API keys during the image build via the `--secret` option.
+
+The keys can be stored in a separate file, following the format:
+
+```
+'c1425880-2289-4b76-ae29-bcea34997256' => 0,
+'de7970e6-0466-4ce2-a6a4-c1a51363bd03' => 90
+```
+
+You can find more information on API keys in the Jobe documentation.
+
+With the following command the keys stored in a file called `api_keys` in the
+jobeinabox directory are automatically added to `/var/www/html/jobe/app/Config/Jobe.php`
+and the option `$require_api_keys` is set to true.
+
+If no API keys are provided the configuration remains untouched.
+
+### Warnings:
+
+1.  The image is over 1 GB, so may take a long time to start the first
+    time, depending on your download bandwidth.
+
+## Using jobeinabox
+
+Having started a jobeinabox container by either of the above methods, you
+can check it's running OK by browsing to
+
+- http://[host_running_docker]:4000/jobe/index.php/restapi/languages
+- http://host.docker.internal:4000/jobe/index.php/restapi/languages
+
+and you should get a JSON-encoded list of the supported languages, namely
+
+curl -k -X GET http://host.docker.internal:4000/jobe/index.php/restapi/languages
+
+If you wish to run the test suite within the container, use the command
+
+```bash
+docker exec -t jobeinabox python3 /var/www/html/jobe/testsubmit.py
+```
+
+```txt
+Supported languages:
+    c: 14.2.0
+    cpp: 14.2.0
+    java: 21.0.11
+    nodejs: 20.19.2
+    octave: 9.4.0
+    pascal: 3.2.2
+    php: 8.4.21
+    python3: 3.13.5
+```
+
+```bash
+docker exec -it jobeinabox /container-test.sh
+```
+
+```bash
+docker exec -t jobeinabox python3 /var/www/html/jobe/minimaltest.py
+```
+
+To set your Moodle/CodeRunner plugin to use this dockerised Jobe server, set the Jobe server field in the CodeRunner admin settings (Site Administration > Plugins > Question types > CodeRunner) to
+
+    [host_running_docker]:4000
+
+Do not put http:// at the start.
+
+To stop the running server, enter the command:
+
+```bash
+sudo docker stop jobeinabox
+```
+
+To remove the running server, enter the command:
+
+```bash
+sudo docker rm jobeinabox
+```
+
+To check if there is anything left, enter the command
+
+```bash
+sudo docker ps -a
+```
+
+## Notes on security:
+
+1.  Note that while the container in which this Jobe runs should be secure, the
+    container's network is currently just bridged across to the host's network.
+    This means that Jobe can be accessed from anywhere that can access the host
+    and can access any URI that the host can access. Firewalling of the host is
+    essential for production use.
+
+1.  Rebuild the container regularly to ensures that it is running
+    with the latest jobe version and security updates.
+
+## Localhost use
+
+Under `/admin/settings.php?section=qtypesettingcoderunner`
+
+```
+Jobe server qtype_coderunner | jobe_host
+```
+
+Add host.docker.internal:4000
+
+Under `/admin/settings.php?section=httpsecurity`
+
+- cURL blocked hosts list | curlsecurityblockedhosts
+  Remove all internal IPs
+
+- Add port 4000 to cURL allowed ports list
+  cURL allowed ports list | curlsecurityallowedport
