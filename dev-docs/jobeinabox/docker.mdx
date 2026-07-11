@@ -10,7 +10,7 @@ sidebar_position: 1
 ![Docker Stars](https://img.shields.io/docker/stars/ruseler/jobeinabox.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/ruseler/jobeinabox.svg)
 
-The [Moodle CodeRunner question type plugin](https://moodle.org/plugins/qtype_coderunner) requires a [Jobe server](https://github.com/trampgeek) on which to run student-submitted jobs. [JobeInABox](hub.docker.com/r/ruseler/jobeinabox) is a Docker image that provides a basic Jobe server that runs all the standard languages. For full information on Jobe servers, see the [full Jobe documentation](https://github.com/trampgeek/jobe)
+The [Moodle CodeRunner question type plugin](https://moodle.org/plugins/qtype_coderunner) requires a [Jobe server](https://github.com/trampgeek) on which to run student-submitted jobs. [JobeInABox](https://hub.docker.com/r/ruseler/jobeinabox) is a Docker image that provides a basic Jobe server that runs all the standard languages. For full information on Jobe servers, see the [full Jobe documentation](https://github.com/trampgeek/jobe)
 
 :::info[Security]
 For security and performance reasons it is strongly recommended to run Jobe on a
@@ -176,7 +176,9 @@ docker exec -t jobeinabox python3 /var/www/html/jobe/minimaltest.py
 
 To set your Moodle/CodeRunner plugin to use this dockerised Jobe server, set the Jobe server field in the CodeRunner admin settings (Site Administration > Plugins > Question types > CodeRunner) to
 
-    [host_running_docker]:4000
+```bash
+[host_running_docker]:4000
+```
 
 Do not put http:// at the start.
 
