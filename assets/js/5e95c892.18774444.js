@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmoodle_docs=self.webpackChunkmoodle_docs||[]).push([["1668"],{9500(e,s,r){r.r(s),r.d(s,{default:()=>n});var c=r(4848);r(6540);var o=r(4164),a=r(4329),d=r(5678),u=r(2831),l=r(9536);function n(e){return(0,c.jsx)(a.e3,{className:(0,o.A)(d.G.wrapper.docsPages),children:(0,c.jsx)(l.A,{children:(0,u.v)(e.route.routes)})})}}}]);
