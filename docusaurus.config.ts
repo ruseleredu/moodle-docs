@@ -139,6 +139,12 @@ const config: Config = {
         // ... other options specific to your QA docs
       },
     ],
+    [
+      "@cmfcmf/docusaurus-search-local",
+      {
+        // Options here
+      },
+    ],
   ],
 
   themeConfig: {
