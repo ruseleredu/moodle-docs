@@ -87,7 +87,12 @@ const navbarItems: NavbarItem[] = [
             },
         ],
     },
-    { to: '/blog', label: 'Blog', position: 'left' },
+    // { to: '/blog', label: 'Blog', position: 'left' },
+    {
+        href: "https://hub.docker.com/repositories/ruseler",
+        label: "Docker Hub",
+        position: "right",
+    },
     {
         href: "https://moodledev.io/",
         label: "Development",
