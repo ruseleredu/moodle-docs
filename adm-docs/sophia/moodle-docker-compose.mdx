@@ -1,0 +1,2071 @@
+---
+id: moodle-docker-compose
+title: Moodle 5.2 com Docker Compose
+sidebar_label: Moodle + Docker Compose
+description: Guia completo para executar Moodle 5.2 com MariaDB, Redis e backups usando Docker Compose.
+---
+
+# Moodle 5.2 com Docker Compose
+
+Este guia apresenta, passo a passo, como executar o **Moodle 5.2** utilizando Docker Compose, desde a instalação inicial até operações avançadas de manutenção, persistência, backups e diagnóstico.
+
+A arquitetura utilizada é composta por:
+
+- Moodle 5.2
+- MariaDB
+- Redis
+- Serviço de backup
+- Docker Compose
+- Volumes persistentes
+- Healthchecks
+- Rede interna do Docker
+
+## Arquitetura
+
+```text
+                         ┌─────────────────────┐
+                         │       Browser       │
+                         │  http://localhost   │
+                         └──────────┬──────────┘
+                                    │
+                                    │ :8096
+                                    ▼
+                         ┌─────────────────────┐
+                         │       Moodle        │
+                         │  ruseler/alpine-    │
+                         │     sophia:5.2      │
+                         └───────┬───────┬─────┘
+                                 │       │
+                     ┌───────────┘       └───────────┐
+                     │                               │
+                     ▼                               ▼
+             ┌───────────────┐              ┌───────────────┐
+             │    MariaDB    │              │     Redis     │
+             │     :3306     │              │     :6379     │
+             └───────┬───────┘              └───────────────┘
+                     │
+                     │
+                     ▼
+             ┌─────────────────┐
+             │     Backup      │
+             │ MariaDB + data  │
+             └─────────────────┘
+```
+
+---
+
+# 1. Pré-requisitos
+
+Antes de iniciar, precisamos instalar o Docker.
+
+## 1.1 Windows
+
+No Windows, a maneira mais simples é utilizar o **Docker Desktop**.
+
+Verifique se o Docker está funcionando:
+
+```powershell
+docker --version
+```
+
+Depois:
+
+```powershell
+docker compose version
+```
+
+Exemplo:
+
+```text
+Docker version 28.x.x
+Docker Compose version v2.x.x
+```
+
+---
+
+# 2. Estrutura do projeto
+
+Crie um diretório para o projeto:
+
+```text
+moodle-docker/
+```
+
+A estrutura recomendada será:
+
+```text
+moodle-docker/
+│
+├── docker-compose.yml
+│
+├── backup/
+│   ├── Dockerfile
+│   └── backup.sh
+│
+└── backups/
+```
+
+Depois de criado:
+
+```bash
+cd moodle-docker
+```
+
+---
+
+# 3. Arquivo docker-compose.yml
+
+O arquivo principal do projeto é:
+
+```text
+docker-compose.yml
+```
+
+Crie:
+
+```yaml
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:lts
+    container_name: mariadb
+    restart: unless-stopped
+
+    environment:
+      MARIADB_ROOT_PASSWORD: moodle_root
+      MARIADB_DATABASE: moodle
+      MARIADB_USER: moodle
+      MARIADB_PASSWORD: moodle
+
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+    volumes:
+      - mariadb:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 1m
+      start_interval: 10s
+      interval: 1m
+      timeout: 5s
+      retries: 3
+
+  moodle:
+    image: ruseler/alpine-sophia:5.2
+    container_name: moodle
+    restart: unless-stopped
+
+    environment:
+      LANG: en_US.UTF-8
+      LANGUAGE: en_US:en
+
+      SITE_URL: https://sophiadev.mini.pc
+
+      DB_TYPE: mariadb
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_NAME: moodle
+      DB_USER: moodle
+      DB_PASS: moodle
+      DB_PREFIX: mdl_
+
+      REDIS_HOST: redis
+
+      REVERSEPROXY: false
+      SSLPROXY: true
+
+      MOODLE_EMAIL: admin@host.docker.internal
+      MOODLE_USERNAME: admin
+      MOODLE_PASSWORD: M@0dl3ing
+      MOODLE_MAIL_NOREPLY_ADDRESS: noreply@host.docker.internal
+
+      AUTO_UPDATE_MOODLE: true
+
+      POST_CONFIGURE_COMMANDS: |
+        echo 'Starting background Moodle cron loop...'
+        sh -c 'while true; do php /var/www/html/admin/cli/cron.php; sleep 60; done' &
+
+    ports:
+      - "8096:8080"
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+      - moodledata:/var/www/moodledata
+
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8080/login/index.php >/dev/null || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 2m
+
+  backup:
+    build:
+      context: ./backup
+
+    container_name: moodle-backup
+    restart: unless-stopped
+
+    environment:
+      MYSQL_HOST: mariadb
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: moodle
+      MYSQL_USER: moodle
+      MYSQL_PASSWORD: moodle
+
+      BACKUP_INTERVAL: 86400
+      BACKUP_RETENTION: 7
+
+    volumes:
+      - moodledata:/moodledata:ro
+      - ./backups:/backups
+
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+      moodle:
+        condition: service_healthy
+
+volumes:
+  mariadb:
+  moodledata:
+```
+
+---
+
+# 4. Entendendo o Compose
+
+O arquivo define quatro serviços:
+
+```text
+redis
+mariadb
+moodle
+backup
+```
+
+Cada serviço executa em seu próprio container.
+
+```text
+Docker Compose
+│
+├── redis
+├── mariadb
+├── moodle
+└── backup
+```
+
+---
+
+# 5. Serviço Redis
+
+```yaml
+redis:
+  image: redis:alpine
+  container_name: redis
+  restart: unless-stopped
+```
+
+O Redis é utilizado pelo Moodle para armazenamento em cache.
+
+O serviço utiliza:
+
+```text
+redis:alpine
+```
+
+A aplicação Moodle acessa o Redis através do nome:
+
+```text
+redis
+```
+
+Por isso:
+
+```yaml
+REDIS_HOST: redis
+```
+
+---
+
+# 6. Serviço MariaDB
+
+O banco de dados utiliza a imagem oficial:
+
+```yaml
+image: mariadb:lts
+```
+
+O banco recebe:
+
+```yaml
+MARIADB_DATABASE: moodle
+MARIADB_USER: moodle
+MARIADB_PASSWORD: moodle
+```
+
+Portanto:
+
+```text
+Database: moodle
+User:     moodle
+Password: moodle
+```
+
+A senha do usuário `root` é:
+
+```text
+moodle_root
+```
+
+---
+
+# 7. UTF-8 e Moodle
+
+Uma configuração importante é:
+
+```yaml
+command:
+  - --character-set-server=utf8mb4
+  - --collation-server=utf8mb4_unicode_ci
+```
+
+Isso configura o MariaDB para utilizar Unicode.
+
+O Moodle exige suporte adequado a Unicode.
+
+Sem essa configuração, uma instalação nova pode apresentar erro semelhante a:
+
+```text
+!! unicode !!
+
+All data must be stored in Unicode format (UTF-8).
+```
+
+## 7.1 Por que utf8mb4?
+
+`utf8mb4` permite armazenar caracteres Unicode de forma completa, incluindo caracteres que não são representados pelo antigo `utf8` limitado do MySQL/MariaDB.
+
+Por exemplo:
+
+```text
+Olá
+Moodle
+IoT
+ESP32
+😀
+```
+
+---
+
+# 8. Persistência do MariaDB
+
+O banco utiliza:
+
+```yaml
+volumes:
+  - mariadb:/var/lib/mysql
+```
+
+Isso significa que os dados ficam em um volume Docker:
+
+```text
+mariadb
+```
+
+O container pode ser removido sem necessariamente perder o banco.
+
+Por exemplo:
+
+```bash
+docker compose down
+```
+
+não remove os volumes.
+
+---
+
+# 9. Atenção ao docker compose down -v
+
+O comando:
+
+```bash
+docker compose down -v
+```
+
+remove também os volumes.
+
+Isso significa que:
+
+```text
+mariadb
+moodledata
+```
+
+serão apagados.
+
+Para desenvolvimento, entretanto, ele é extremamente útil para começar novamente.
+
+---
+
+# 10. Healthcheck do MariaDB
+
+O MariaDB possui:
+
+```yaml
+healthcheck:
+  test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+```
+
+Isso permite que o Docker determine se o banco está realmente pronto.
+
+Não basta o container estar executando.
+
+Existe uma diferença entre:
+
+```text
+container started
+```
+
+e:
+
+```text
+database ready
+```
+
+---
+
+# 11. Serviço Moodle
+
+O Moodle utiliza:
+
+```yaml
+image: ruseler/alpine-sophia:5.2
+```
+
+O container expõe:
+
+```yaml
+ports:
+  - "8096:8080"
+```
+
+Isso significa:
+
+```text
+Host:      8096
+Container: 8080
+```
+
+Portanto:
+
+```text
+http://localhost:8096
+```
+
+acessa:
+
+```text
+Moodle:8080
+```
+
+---
+
+# 12. Variáveis do Moodle
+
+As principais variáveis são:
+
+```yaml
+DB_TYPE: mariadb
+DB_HOST: mariadb
+DB_PORT: 3306
+DB_NAME: moodle
+DB_USER: moodle
+DB_PASS: moodle
+```
+
+Observe que:
+
+```yaml
+DB_HOST: mariadb
+```
+
+não é:
+
+```yaml
+DB_HOST: localhost
+```
+
+Isso ocorre porque o banco está em outro container.
+
+A comunicação é:
+
+```text
+moodle
+   │
+   │ TCP 3306
+   ▼
+mariadb
+```
+
+---
+
+# 13. Moodledata
+
+O Moodle utiliza:
+
+```yaml
+volumes:
+  - moodledata:/var/www/moodledata
+```
+
+O volume:
+
+```text
+moodledata
+```
+
+contém arquivos enviados pelos usuários e outros dados da aplicação.
+
+Por exemplo:
+
+```text
+moodledata/
+├── filedir/
+├── cache/
+├── localcache/
+├── temp/
+└── trashdir/
+```
+
+O conteúdo de `moodledata` não deve ser perdido.
+
+---
+
+# 14. Cron do Moodle
+
+O Compose utiliza:
+
+```yaml
+POST_CONFIGURE_COMMANDS: |
+  echo 'Starting background Moodle cron loop...'
+  sh -c 'while true; do php /var/www/html/admin/cli/cron.php; sleep 60; done' &
+```
+
+Isso cria um loop que executa:
+
+```bash
+php /var/www/html/admin/cli/cron.php
+```
+
+a cada:
+
+```text
+60 segundos
+```
+
+O cron do Moodle executa tarefas automáticas como:
+
+- processamento de tarefas;
+- envio de mensagens;
+- processamento de eventos;
+- tarefas de plugins;
+- manutenção;
+- outras tarefas agendadas.
+
+---
+
+# 15. Healthcheck do Moodle
+
+O Moodle possui:
+
+```yaml
+healthcheck:
+  test:
+    [
+      "CMD-SHELL",
+      "curl -fsS http://localhost:8080/login/index.php >/dev/null || exit 1",
+    ]
+```
+
+O Docker verifica:
+
+```text
+http://localhost:8080/login/index.php
+```
+
+Se a página responder corretamente, o container pode ser considerado saudável.
+
+---
+
+# 16. Por que o backup depende do Moodle?
+
+O serviço de backup utiliza:
+
+```yaml
+depends_on:
+  mariadb:
+    condition: service_healthy
+
+  moodle:
+    condition: service_healthy
+```
+
+Isso é importante.
+
+Uma configuração como:
+
+```yaml
+depends_on:
+  - moodle
+```
+
+somente indica que o container Moodle deve ser iniciado antes.
+
+Ela não garante que o Moodle esteja instalado.
+
+A sequência desejada é:
+
+```text
+MariaDB
+   │
+   │ ready
+   ▼
+Moodle
+   │
+   │ installed + HTTP ready
+   ▼
+Backup
+```
+
+---
+
+# 17. Serviço de backup
+
+O serviço:
+
+```yaml
+backup:
+  build:
+    context: ./backup
+```
+
+é construído a partir do diretório:
+
+```text
+backup/
+```
+
+A estrutura é:
+
+```text
+backup/
+├── Dockerfile
+└── backup.sh
+```
+
+---
+
+# 18. Dockerfile do backup
+
+Crie:
+
+```text
+backup/Dockerfile
+```
+
+com:
+
+```dockerfile
+FROM alpine:3.22
+
+RUN apk add --no-cache \
+    mariadb-client \
+    bash \
+    tar \
+    gzip
+
+COPY backup.sh /usr/local/bin/backup.sh
+
+RUN chmod +x /usr/local/bin/backup.sh
+
+ENTRYPOINT ["/usr/local/bin/backup.sh"]
+```
+
+---
+
+# 19. Script de backup
+
+Crie:
+
+```text
+backup/backup.sh
+```
+
+com:
+
+```bash
+#!/bin/bash
+
+set -e
+
+BACKUP_INTERVAL="${BACKUP_INTERVAL:-86400}"
+BACKUP_RETENTION="${BACKUP_RETENTION:-7}"
+
+MYSQL_HOST="${MYSQL_HOST:-mariadb}"
+MYSQL_PORT="${MYSQL_PORT:-3306}"
+MYSQL_DATABASE="${MYSQL_DATABASE:-moodle}"
+MYSQL_USER="${MYSQL_USER:-moodle}"
+MYSQL_PASSWORD="${MYSQL_PASSWORD:-moodle}"
+
+BACKUP_DIR="/backups"
+
+mkdir -p "$BACKUP_DIR"
+
+while true
+do
+
+    TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+
+    BACKUP_PATH="${BACKUP_DIR}/${TIMESTAMP}"
+
+    echo "=========================================="
+    echo "Starting Moodle backup"
+    echo "Date: ${TIMESTAMP}"
+    echo "=========================================="
+
+    mkdir -p "$BACKUP_PATH"
+
+    echo "Backing up MariaDB..."
+
+    mariadb-dump \
+        --host="$MYSQL_HOST" \
+        --port="$MYSQL_PORT" \
+        --user="$MYSQL_USER" \
+        --password="$MYSQL_PASSWORD" \
+        "$MYSQL_DATABASE" \
+        | gzip > "${BACKUP_PATH}/moodle.sql.gz"
+
+    echo "Backing up moodledata..."
+
+    tar \
+        -czf "${BACKUP_PATH}/moodledata.tar.gz" \
+        -C /moodledata \
+        .
+
+    echo "Backup completed."
+
+    echo "Applying retention policy..."
+
+    find "$BACKUP_DIR" \
+        -mindepth 1 \
+        -maxdepth 1 \
+        -type d \
+        -printf '%T@ %p\n' \
+        | sort -n \
+        | head -n "-${BACKUP_RETENTION}" \
+        | cut -d' ' -f2- \
+        | xargs -r rm -rf
+
+    echo "Sleeping ${BACKUP_INTERVAL} seconds..."
+
+    sleep "$BACKUP_INTERVAL"
+
+done
+```
+
+---
+
+# 20. O que o backup salva?
+
+Cada backup contém dois arquivos:
+
+```text
+YYYY-MM-DD_HH-MM-SS/
+│
+├── moodle.sql.gz
+└── moodledata.tar.gz
+```
+
+O primeiro:
+
+```text
+moodle.sql.gz
+```
+
+é o banco de dados.
+
+O segundo:
+
+```text
+moodledata.tar.gz
+```
+
+é o `moodledata`.
+
+---
+
+# 21. Diretório de backups
+
+No host:
+
+```text
+./backups
+```
+
+é montado no container como:
+
+```text
+/backups
+```
+
+Portanto:
+
+```text
+Projeto
+│
+├── backups/
+│   ├── 2026-09-21_03-00-00/
+│   │   ├── moodle.sql.gz
+│   │   └── moodledata.tar.gz
+│   │
+│   └── 2026-09-22_03-00-00/
+│       ├── moodle.sql.gz
+│       └── moodledata.tar.gz
+```
+
+---
+
+# 22. Política de retenção
+
+A variável:
+
+```yaml
+BACKUP_RETENTION: 7
+```
+
+indica que serão mantidos aproximadamente os últimos sete backups.
+
+Para manter:
+
+```text
+30 backups
+```
+
+use:
+
+```yaml
+BACKUP_RETENTION: 30
+```
+
+---
+
+# 23. Intervalo entre backups
+
+Atualmente:
+
+```yaml
+BACKUP_INTERVAL: 86400
+```
+
+86400 segundos correspondem a:
+
+```text
+24 horas
+```
+
+Para executar a cada 6 horas:
+
+```yaml
+BACKUP_INTERVAL: 21600
+```
+
+Para cada hora:
+
+```yaml
+BACKUP_INTERVAL: 3600
+```
+
+---
+
+# 24. Iniciando o Moodle
+
+Depois de criar os arquivos:
+
+```text
+docker-compose.yml
+backup/
+backups/
+```
+
+execute:
+
+```bash
+docker compose up -d
+```
+
+O Docker fará:
+
+```text
+1. Criar rede
+2. Criar volumes
+3. Baixar imagens
+4. Iniciar MariaDB
+5. Iniciar Redis
+6. Iniciar Moodle
+7. Construir backup
+8. Iniciar backup quando Moodle estiver saudável
+```
+
+---
+
+# 25. Verificando os containers
+
+Execute:
+
+```bash
+docker compose ps
+```
+
+Você deverá encontrar algo semelhante a:
+
+```text
+NAME             STATUS
+mariadb          Up (healthy)
+redis            Up
+moodle           Up (healthy)
+moodle-backup    Up
+```
+
+---
+
+# 26. Verificando os logs
+
+Para todos os serviços:
+
+```bash
+docker compose logs
+```
+
+Somente Moodle:
+
+```bash
+docker compose logs moodle
+```
+
+MariaDB:
+
+```bash
+docker compose logs mariadb
+```
+
+Redis:
+
+```bash
+docker compose logs redis
+```
+
+Backup:
+
+```bash
+docker compose logs backup
+```
+
+Para acompanhar em tempo real:
+
+```bash
+docker compose logs -f moodle
+```
+
+---
+
+# 27. Acessando o Moodle
+
+Abra:
+
+```text
+http://localhost:8096
+```
+
+Caso `SITE_URL` esteja configurado para um hostname específico:
+
+```text
+https://sophiadev.mini.pc
+```
+
+é necessário que esse hostname esteja corretamente configurado no ambiente.
+
+---
+
+# 28. Verificando os volumes
+
+Execute:
+
+```bash
+docker volume ls
+```
+
+Você deverá encontrar volumes semelhantes a:
+
+```text
+moodle-docker_mariadb
+moodle-docker_moodledata
+```
+
+Para obter detalhes:
+
+```bash
+docker volume inspect moodle-docker_mariadb
+```
+
+---
+
+# 29. Entrando no container Moodle
+
+Execute:
+
+```bash
+docker compose exec moodle sh
+```
+
+Agora você está dentro do container.
+
+Verifique:
+
+```bash
+php --version
+```
+
+E:
+
+```bash
+ls -la /var/www/html
+```
+
+Saia com:
+
+```bash
+exit
+```
+
+---
+
+# 30. Entrando no MariaDB
+
+Execute:
+
+```bash
+docker compose exec mariadb mariadb \
+  -u moodle \
+  -p moodle
+```
+
+Digite:
+
+```text
+moodle
+```
+
+Você poderá executar:
+
+```sql
+SHOW DATABASES;
+```
+
+E:
+
+```sql
+USE moodle;
+```
+
+Depois:
+
+```sql
+SHOW TABLES;
+```
+
+Saia:
+
+```sql
+exit;
+```
+
+---
+
+# 31. Verificando UTF-8
+
+Dentro do MariaDB:
+
+```sql
+SHOW VARIABLES LIKE 'character_set%';
+```
+
+E:
+
+```sql
+SHOW VARIABLES LIKE 'collation%';
+```
+
+O servidor deverá utilizar `utf8mb4`.
+
+---
+
+# 32. Primeira instalação
+
+Em uma instalação nova, a sequência esperada é:
+
+```text
+docker compose up -d
+        │
+        ▼
+MariaDB inicializa
+        │
+        ▼
+MariaDB healthy
+        │
+        ▼
+Moodle inicia
+        │
+        ▼
+Moodle configura banco
+        │
+        ▼
+Moodle instalado
+        │
+        ▼
+Moodle healthy
+        │
+        ▼
+Backup inicia
+```
+
+---
+
+# 33. Reiniciando o ambiente
+
+Para parar:
+
+```bash
+docker compose stop
+```
+
+Para iniciar novamente:
+
+```bash
+docker compose start
+```
+
+Para reiniciar:
+
+```bash
+docker compose restart
+```
+
+---
+
+# 34. Atualizando as imagens
+
+Para baixar versões mais recentes:
+
+```bash
+docker compose pull
+```
+
+Depois:
+
+```bash
+docker compose up -d
+```
+
+---
+
+# 35. Recriando os containers
+
+Para recriar os containers:
+
+```bash
+docker compose up -d --force-recreate
+```
+
+Os volumes permanecem.
+
+---
+
+# 36. Parando completamente
+
+```bash
+docker compose down
+```
+
+Os containers e a rede são removidos.
+
+Os volumes continuam.
+
+---
+
+# 37. Reset completo
+
+Para destruir também os volumes:
+
+```bash
+docker compose down -v
+```
+
+---
+
+# 38. Problema: Moodle não inicia
+
+Primeiro:
+
+```bash
+docker compose ps
+```
+
+Depois:
+
+```bash
+docker compose logs moodle
+```
+
+Procure mensagens relacionadas a:
+
+```text
+database
+connection
+permission
+config.php
+PHP
+plugin
+```
+
+---
+
+# 39. Problema: MariaDB não fica healthy
+
+Verifique:
+
+```bash
+docker compose logs mariadb
+```
+
+Depois:
+
+```bash
+docker compose exec mariadb \
+  mariadb-admin ping \
+  -u root \
+  -p
+```
+
+---
+
+# 40. Problema: erro de Unicode
+
+Se aparecer:
+
+```text
+All data must be stored in Unicode format (UTF-8)
+```
+
+verifique:
+
+```bash
+docker compose exec mariadb \
+  mariadb \
+  -u root \
+  -p \
+  -e "SHOW VARIABLES LIKE 'character_set_server';"
+```
+
+O resultado esperado é:
+
+```text
+utf8mb4
+```
+
+Também verifique:
+
+```bash
+docker compose exec mariadb \
+  mariadb \
+  -u root \
+  -p \
+  -e "SHOW VARIABLES LIKE 'collation_server';"
+```
+
+---
+
+# 41. Importante: volumes existentes
+
+A configuração:
+
+```yaml
+command:
+  - --character-set-server=utf8mb4
+```
+
+é especialmente importante durante a inicialização de uma nova instalação.
+
+Se o volume MariaDB já existir, simplesmente alterar o Compose não converte automaticamente um banco existente.
+
+Para ambiente de desenvolvimento, uma solução é recriar tudo:
+
+```bash
+docker compose down -v
+```
+
+e:
+
+```bash
+docker compose up -d
+```
+
+---
+
+# 42. Verificando o backup
+
+Depois que o serviço estiver executando:
+
+```bash
+docker compose logs backup
+```
+
+Você deverá encontrar mensagens semelhantes a:
+
+```text
+Starting Moodle backup
+Backing up MariaDB...
+Backing up moodledata...
+Backup completed.
+```
+
+Verifique:
+
+```bash
+ls backups
+```
+
+No Windows PowerShell:
+
+```powershell
+Get-ChildItem .\backups
+```
+
+---
+
+# 43. Testando o backup manualmente
+
+Para executar um novo ciclo de backup imediatamente:
+
+```bash
+docker compose restart backup
+```
+
+Depois:
+
+```bash
+docker compose logs -f backup
+```
+
+---
+
+# 44. Verificando o conteúdo
+
+Entre no diretório:
+
+```bash
+cd backups
+```
+
+Um backup terá:
+
+```text
+moodle.sql.gz
+moodledata.tar.gz
+```
+
+Verifique o banco:
+
+```bash
+gzip -t moodle.sql.gz
+```
+
+Verifique o arquivo do Moodle:
+
+```bash
+tar -tzf moodledata.tar.gz > /dev/null
+```
+
+Se os comandos terminarem sem erro, os arquivos possuem uma estrutura de compressão válida.
+
+---
+
+# 45. Restore: conceito
+
+O backup do Moodle possui duas partes:
+
+```text
+Backup
+├── Database
+│   └── moodle.sql.gz
+│
+└── Files
+    └── moodledata.tar.gz
+```
+
+Um restore completo precisa restaurar **ambas**.
+
+Restaurar somente o banco não é suficiente.
+
+Restaurar somente `moodledata` também não é suficiente.
+
+---
+
+# 46. Estratégia de restore
+
+O procedimento geral é:
+
+```text
+1. Parar Moodle
+2. Parar backup
+3. Restaurar banco
+4. Restaurar moodledata
+5. Iniciar MariaDB
+6. Iniciar Moodle
+7. Verificar funcionamento
+```
+
+---
+
+# 47. Parando os serviços
+
+Antes de uma restauração:
+
+```bash
+docker compose stop moodle backup
+```
+
+MariaDB pode continuar executando durante o restore.
+
+---
+
+# 48. Restaurando o banco
+
+Supondo:
+
+```text
+backups/2026-09-21_03-00-00/moodle.sql.gz
+```
+
+podemos enviar o SQL comprimido diretamente ao MariaDB:
+
+```bash
+gzip -dc \
+  backups/2026-09-21_03-00-00/moodle.sql.gz \
+  | docker compose exec -T mariadb \
+      mariadb \
+      -u moodle \
+      -pmoodle \
+      moodle
+```
+
+---
+
+# 49. Restaurando moodledata
+
+O restore do volume exige cuidado.
+
+Uma forma segura é utilizar um container temporário.
+
+Primeiro descubra o volume:
+
+```bash
+docker volume ls
+```
+
+Por exemplo:
+
+```text
+moodle-docker_moodledata
+```
+
+Depois:
+
+```bash
+docker run --rm \
+  -v moodle-docker_moodledata:/moodledata \
+  -v "$(pwd)/backups/2026-09-21_03-00-00:/backup:ro" \
+  alpine:3.22 \
+  sh -c '
+    rm -rf /moodledata/* &&
+    tar -xzf /backup/moodledata.tar.gz -C /moodledata
+  '
+```
+
+---
+
+# 50. Reiniciando após restore
+
+Depois:
+
+```bash
+docker compose start moodle
+```
+
+Acompanhe:
+
+```bash
+docker compose logs -f moodle
+```
+
+E:
+
+```bash
+docker compose ps
+```
+
+---
+
+# 51. Backup não é o mesmo que alta disponibilidade
+
+O serviço de backup protege contra:
+
+```text
+perda de dados
+```
+
+Mas não fornece:
+
+```text
+alta disponibilidade
+```
+
+Por exemplo:
+
+```text
+Servidor
+   │
+   ├── Moodle
+   ├── MariaDB
+   └── Backup
+```
+
+Se o próprio servidor for destruído, os backups armazenados nele também poderão ser perdidos.
+
+---
+
+# 52. Regra 3-2-1
+
+Para ambientes importantes, uma estratégia conhecida é:
+
+```text
+3 cópias dos dados
+2 mídias diferentes
+1 cópia fora do ambiente principal
+```
+
+Por exemplo:
+
+```text
+Servidor
+   │
+   ├── MariaDB
+   ├── moodledata
+   │
+   └── Backup local
+          │
+          ├── NAS
+          │
+          └── Cloud
+```
+
+---
+
+# 53. Segurança das senhas
+
+O Compose apresentado possui senhas diretamente no arquivo:
+
+```yaml
+MARIADB_ROOT_PASSWORD: moodle_root
+MARIADB_PASSWORD: moodle
+```
+
+Isso é conveniente para desenvolvimento.
+
+Para produção, é preferível utilizar:
+
+```text
+.env
+```
+
+ou mecanismos de secrets.
+
+---
+
+# 54. Utilizando .env
+
+Crie:
+
+```text
+.env
+```
+
+Por exemplo:
+
+```dotenv
+MARIADB_ROOT_PASSWORD=uma_senha_forte
+MARIADB_PASSWORD=outra_senha_forte
+
+MOODLE_USERNAME=admin
+MOODLE_PASSWORD=uma_senha_admin_forte
+```
+
+Então o Compose pode utilizar:
+
+```yaml
+MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+```
+
+E:
+
+```yaml
+MOODLE_USERNAME: ${MOODLE_USERNAME}
+MOODLE_PASSWORD: ${MOODLE_PASSWORD}
+```
+
+---
+
+# 55. Não versionar o .env
+
+Adicione ao:
+
+```text
+.gitignore
+```
+
+:
+
+```gitignore
+.env
+backups/
+```
+
+Isso evita colocar credenciais e backups no Git.
+
+---
+
+# 56. Produção
+
+Para produção, recomenda-se separar:
+
+```text
+Desenvolvimento
+```
+
+de:
+
+```text
+Produção
+```
+
+Uma arquitetura mais completa poderia ser:
+
+```text
+Internet
+   │
+   ▼
+Reverse Proxy
+   │
+   ▼
+Moodle
+   │
+   ├── MariaDB
+   │
+   ├── Redis
+   │
+   └── Moodledata
+          │
+          ▼
+       Backup
+          │
+          ▼
+      Storage externo
+```
+
+---
+
+# 57. Reverse proxy
+
+O Compose atualmente publica:
+
+```yaml
+ports:
+  - "8096:8080"
+```
+
+Em produção, pode ser interessante colocar um reverse proxy na frente:
+
+```text
+Internet
+   │
+   │ HTTPS :443
+   ▼
+Nginx / Traefik / Caddy
+   │
+   │ HTTP
+   ▼
+Moodle :8080
+```
+
+Isso permite centralizar:
+
+- HTTPS;
+- certificados;
+- domínios;
+- redirects;
+- headers;
+- múltiplos serviços.
+
+---
+
+# 58. HTTPS
+
+O Moodle possui:
+
+```yaml
+SITE_URL: https://sophiadev.mini.pc
+```
+
+Isso significa que o Moodle está sendo configurado para utilizar HTTPS.
+
+---
+
+# 59. Desenvolvimento versus produção
+
+| Característica    | Desenvolvimento | Produção             |
+| ----------------- | --------------- | -------------------- |
+| Senhas no Compose | aceitável       | evitar               |
+| HTTP local        | aceitável       | evitar               |
+| Backup local      | útil            | insuficiente sozinho |
+| Volume Docker     | sim             | sim                  |
+| Redis             | recomendado     | recomendado          |
+| Reverse proxy     | opcional        | recomendado          |
+| HTTPS             | opcional        | recomendado          |
+| Backup externo    | opcional        | recomendado          |
+| Monitoramento     | opcional        | recomendado          |
+
+---
+
+# 60. Comandos essenciais
+
+## Iniciar
+
+```bash
+docker compose up -d
+```
+
+## Parar
+
+```bash
+docker compose stop
+```
+
+## Reiniciar
+
+```bash
+docker compose restart
+```
+
+## Ver status
+
+```bash
+docker compose ps
+```
+
+## Ver logs
+
+```bash
+docker compose logs -f
+```
+
+## Logs do Moodle
+
+```bash
+docker compose logs -f moodle
+```
+
+## Logs do banco
+
+```bash
+docker compose logs -f mariadb
+```
+
+## Logs do backup
+
+```bash
+docker compose logs -f backup
+```
+
+## Entrar no Moodle
+
+```bash
+docker compose exec moodle sh
+```
+
+## Entrar no MariaDB
+
+```bash
+docker compose exec mariadb mariadb -u moodle -p moodle
+```
+
+## Parar e remover containers
+
+```bash
+docker compose down
+```
+
+## Remover containers e volumes
+
+```bash
+docker compose down -v
+```
+
+---
+
+# 61. Checklist de instalação
+
+Use esta lista na primeira instalação:
+
+- [ ] Docker instalado
+- [ ] Docker Compose disponível
+- [ ] Diretório criado
+- [ ] `docker-compose.yml` criado
+- [ ] diretório `backup/` criado
+- [ ] `Dockerfile` criado
+- [ ] `backup.sh` criado
+- [ ] diretório `backups/` criado
+- [ ] `docker compose config` executado
+- [ ] `docker compose up -d` executado
+- [ ] MariaDB `healthy`
+- [ ] Moodle `healthy`
+- [ ] Redis executando
+- [ ] Backup executando
+- [ ] Moodle acessível
+- [ ] primeiro backup criado
+
+---
+
+# 62. Validando o Compose
+
+Antes de iniciar:
+
+```bash
+docker compose config
+```
+
+Esse comando ajuda a detectar erros de sintaxe no YAML.
+
+Se estiver correto, o Compose exibirá a configuração resultante.
+
+---
+
+# 63. Diagnóstico rápido
+
+Quando algo não funcionar, siga esta ordem:
+
+```text
+1. docker compose ps
+       │
+       ▼
+2. docker compose logs
+       │
+       ▼
+3. verificar MariaDB
+       │
+       ▼
+4. verificar Moodle
+       │
+       ▼
+5. verificar Redis
+       │
+       ▼
+6. verificar volumes
+       │
+       ▼
+7. verificar backup
+```
+
+---
+
+# 64. Fluxo completo do sistema
+
+O funcionamento completo pode ser entendido assim:
+
+```text
+                 Docker Compose
+                       │
+          ┌────────────┼────────────┐
+          │            │            │
+          ▼            ▼            ▼
+       MariaDB       Redis        Moodle
+          │                         │
+          │                         │
+          └──────────┬──────────────┘
+                     │
+                     ▼
+                 Moodledata
+                     │
+                     ▼
+                   Backup
+                     │
+             ┌───────┴────────┐
+             │                │
+             ▼                ▼
+        moodle.sql.gz   moodledata.tar.gz
+```
+
+---
+
+# 65. Conceitos aprendidos
+
+Ao concluir este guia, você terá trabalhado com:
+
+### Docker
+
+- containers;
+- imagens;
+- volumes;
+- redes;
+- execução de comandos;
+- logs.
+
+### Docker Compose
+
+- services;
+- volumes;
+- environment;
+- `depends_on`;
+- healthchecks;
+- builds;
+- restart policies.
+
+### Moodle
+
+- banco de dados;
+- `moodledata`;
+- cron;
+- Redis;
+- configuração;
+- instalação.
+
+### MariaDB
+
+- usuário;
+- banco;
+- senha;
+- UTF-8;
+- volumes;
+- healthcheck.
+
+### Backup
+
+- dump SQL;
+- compressão;
+- arquivos do Moodle;
+- retenção;
+- restore.
+
+### Administração
+
+- troubleshooting;
+- atualização;
+- persistência;
+- segurança;
+- HTTPS;
+- reverse proxy.
+
+---
+
+# 66. Próximos passos
+
+Depois que o ambiente básico estiver funcionando, os próximos aprimoramentos podem incluir:
+
+1. `.env` para credenciais.
+2. Docker secrets.
+3. Reverse proxy.
+4. HTTPS automático.
+5. Backup para NAS.
+6. Backup para armazenamento S3.
+7. Monitoramento.
+8. Grafana.
+9. Prometheus.
+10. Alertas.
+11. Rotina de teste automático dos backups.
+12. Restore automatizado.
+13. Upgrade controlado do Moodle.
+14. Deploy via Git.
+15. Separação entre `development`, `staging` e `production`.
+
+---
+
+# 67. Resumo
+
+A arquitetura final utiliza:
+
+```text
+┌──────────────────────────────────────────┐
+│              Docker Compose              │
+│                                          │
+│  ┌─────────┐    ┌──────────┐             │
+│  │  Redis  │    │ MariaDB  │             │
+│  └────┬────┘    └────┬─────┘             │
+│       │              │                   │
+│       │         ┌────▼─────┐             │
+│       └────────►│  Moodle  │             │
+│                 └────┬─────┘             │
+│                      │                   │
+│                 moodledata               │
+│                      │                   │
+│                 ┌────▼─────┐             │
+│                 │  Backup  │             │
+│                 └──────────┘             │
+│                                          │
+└──────────────────────────────────────────┘
+```
+
+O ponto mais importante é compreender que existem **três níveis diferentes de dependência**:
+
+```text
+Container iniciado
+       ≠
+Serviço disponível
+       ≠
+Aplicação pronta
+```
+
+Por isso o Compose utiliza `healthcheck` e:
+
+```yaml
+depends_on:
+  condition: service_healthy
+```
+
+em vez de depender apenas da ordem de inicialização dos containers.
