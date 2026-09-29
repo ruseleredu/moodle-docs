@@ -89,6 +89,11 @@ const navbarItems: NavbarItem[] = [
     },
     // { to: '/blog', label: 'Blog', position: 'left' },
     {
+        href: "https://github.com/ruseleredu/moodle-docs/issues",
+        label: "Issues",
+        position: "right",
+    },
+    {
         href: "https://hub.docker.com/repositories/ruseler",
         label: "Docker Hub",
         position: "right",
