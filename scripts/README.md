@@ -1,17 +1,16 @@
-# docusaurus-shared-scripts
-
-docusaurus-shared-scripts
+# docusaurus-shared-components
+docusaurus-shared-components
 
 ## Add Remote
 
 ```bash
-git remote add shared-scripts https://github.com/ruseleredu/docusaurus-shared-scripts.git
+git remote add shared-components https://github.com/ruseleredu/docusaurus-shared-components.git
 ```
 
 ## Add Subtrees
 
 ```bash
-git subtree add --prefix=scripts shared-scripts main --squash
+git subtree add --prefix=src/components/shared shared-components main --squash
 ```
 
 ## List existing remotes
@@ -23,31 +22,48 @@ git remote -v
 ## Pull Updates
 
 ```bash
-git subtree pull --prefix=scripts shared-scripts main --squash
+git subtree pull --prefix=src/components/shared shared-components main --squash
 ```
 
 ## Push Changes
 
 ```bash
-git subtree push --prefix=scripts shared-scripts main
+git subtree push --prefix=src/components/shared shared-components main
 ```
 
-## List existing remotes
+## Reset all tracked files to match the latest commit:
 
 ```bash
-git remote remove shared-scripts
+git reset --hard HEAD
+```
+## Substituir totalmente o conteúdo do subtree pelo remoto sem merge
+
+```bash
+git rm -r src/components/shared
+git commit -m "Remove local shared-components subtree"
+
+git subtree add --prefix=src/components/shared shared-components main --squash
+```
+
+Se houver mais conflitos:
+
+```bash
+git checkout --theirs .
+git add .
+git commit -m "Accept subtree version"
+```
+
+## Remove remote
+
+```bash
+git remote remove shared-components
 ```
 
 ## Add another remote
 
 ```bash
-git remote add shared-components https://github.com/ruseleredu/docusaurus-shared-components.git
+git remote add shared-scripts https://github.com/ruseleredu/docusaurus-shared-scripts.git
 ```
 
 ---
 
-# Scripts
-
-```bash
-node scripts/generate-emojis.js
-```
